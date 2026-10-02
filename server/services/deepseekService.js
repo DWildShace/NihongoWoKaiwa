@@ -16,6 +16,24 @@ export function isDeepSeekConfigured() {
 }
 
 /**
+ * Parser JSON an toàn, tự động loại bỏ code fence markdown nếu có
+ */
+export function safeJsonParse(rawContent, fallback = {}) {
+  try {
+    let clean = (rawContent || '').trim();
+    if (clean.startsWith('```json')) {
+      clean = clean.replace(/^```json\s*/i, '').replace(/```\s*$/i, '');
+    } else if (clean.startsWith('```')) {
+      clean = clean.replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+    }
+    return JSON.parse(clean);
+  } catch (err) {
+    console.warn('[DeepSeek JSON Parse Warning]:', err.message);
+    return fallback;
+  }
+}
+
+/**
  * Gọi DeepSeek API chuẩn OpenAI format
  */
 export async function callDeepSeek(messages, options = {}) {
@@ -28,6 +46,7 @@ export async function callDeepSeek(messages, options = {}) {
     temperature = 0.7,
     maxTokens = 400,
     responseFormat = { type: 'json_object' },
+    timeout = 12000,
   } = options;
 
   const res = await fetch(DEEPSEEK_API_URL, {
@@ -43,6 +62,7 @@ export async function callDeepSeek(messages, options = {}) {
       max_tokens: maxTokens,
       response_format: responseFormat,
     }),
+    signal: AbortSignal.timeout(timeout),
   });
 
   if (!res.ok) {
@@ -131,7 +151,7 @@ Người học vừa nói: "${actualUserText}"`;
     { maxTokens: 300, temperature: 0.7 }
   );
 
-  const parsed = JSON.parse(content);
+  const parsed = safeJsonParse(content, { aiSentence: 'かしこまりました。', vietnamese: '', isCompleted: false });
   const aiText = parsed.aiSentence || 'かしこまりました。';
 
   // Quyết định kết thúc: Nếu AI đánh dấu hoàn thành, hoặc rơi vào vòng lặp chào hỏi, hoặc chạm giới hạn 10 lượt
@@ -202,7 +222,7 @@ NHIỆM VỤ: Hãy tổng duyệt toàn diện buổi luyện nói của ngườ
     { maxTokens: 800, temperature: 0.6 }
   );
 
-  const parsed = JSON.parse(content);
+  const parsed = safeJsonParse(content, {});
   return {
     overallScore: parsed.overallScore || 90,
     fluencyFeedback: parsed.fluencyFeedback || 'Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!',
@@ -245,7 +265,7 @@ Hãy tạo MỘT tình huống giao tiếp đời sống ngẫu nhiên:
     { maxTokens: 500, temperature: 0.8 }
   );
 
-  const data = JSON.parse(content);
+  const data = safeJsonParse(content, {});
   const aiText = data.firstTurn?.aiSentence || 'いらっしゃいませ。';
   const annotated = await annotateSentence(aiText);
   const normalizedHira = await normalizeToHiragana(aiText);
