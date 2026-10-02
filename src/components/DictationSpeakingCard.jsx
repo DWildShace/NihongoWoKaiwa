@@ -31,6 +31,8 @@ export default function DictationSpeakingCard({
   totalTurns = 10,
   selectedLevel = 'all',
   selectedTopic = 'all',
+  conversationMode = 'roleplay',
+  onModeChange,
   onLevelChange,
   onTopicChange,
   onRandomScenario,
@@ -491,6 +493,55 @@ export default function DictationSpeakingCard({
     <div className="bg-slate-900/90 rounded-3xl border border-slate-800 p-5 lg:p-6 shadow-xl space-y-6 relative">
       {/* 1. SCENARIO BANNER & FILTERS */}
       <div className="space-y-3.5 pb-5 border-b border-slate-800/80">
+        {/* BỘ CHỌN CHẾ ĐỘ HỘI THOẠI: ROLEPLAY vs DEEP TALK */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800/80">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider pl-1">
+              Chế độ:
+            </span>
+            <div className="inline-flex p-1 rounded-xl bg-slate-900 border border-slate-800">
+              <button
+                type="button"
+                onClick={() => onModeChange && onModeChange('roleplay')}
+                disabled={isLoadingScenario || isRecording || isEvaluatingSpeaking}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  conversationMode === 'roleplay'
+                    ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md shadow-rose-500/25'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Tình huống thực tế đời sống (Konbini, nhà hàng, ga tàu, phỏng vấn...)"
+              >
+                <span>⚡ Tình huống thực tế (Roleplay)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onModeChange && onModeChange('deep_talk')}
+                disabled={isLoadingScenario || isRecording || isEvaluatingSpeaking}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  conversationMode === 'deep_talk'
+                    ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-md shadow-indigo-500/25'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Trò chuyện sâu, làm quen bạn mới, hỏi đáp hai chiều và chia sẻ sở thích"
+              >
+                <span>☕ Giao tiếp sâu & Làm quen (Deep Talk)</span>
+              </button>
+            </div>
+          </div>
+
+          {conversationMode === 'deep_talk' ? (
+            <div className="text-[11px] font-medium text-indigo-300/90 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+              <span>Hỏi đáp 2 chiều: Bạn có thể tự do hỏi ngược lại AI (ví dụ: 「〜さんは？」) để kết bạn!</span>
+            </div>
+          ) : (
+            <div className="text-[11px] font-medium text-slate-400 px-2">
+              Luyện phản xạ xử lý tình huống giao dịch đời sống
+            </div>
+          )}
+        </div>
+
         {/* THANH BỘ LỌC CẤP ĐỘ JLPT & CHỦ ĐỀ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80">
           {/* Cấp độ JLPT */}
@@ -532,11 +583,19 @@ export default function DictationSpeakingCard({
               className="bg-slate-900 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700/80 focus:outline-none focus:border-rose-500 cursor-pointer"
             >
               <option value="all">🎲 Mọi chủ đề</option>
-              <option value="daily">🏪 Đời sống & Mua sắm</option>
-              <option value="dining">🍜 Nhà hàng & Quán ăn</option>
-              <option value="travel">🚆 Du lịch & Ga tàu</option>
-              <option value="business">💼 Công sở & Phỏng vấn</option>
-              <option value="medical">🏥 Y tế & Thủ tục</option>
+              <optgroup label="☕ Giao tiếp sâu & Làm quen kết bạn">
+                <option value="social">🤝 Làm quen & Kết bạn mới (自己紹介・初対面)</option>
+                <option value="chitchat">☕ Tán gẫu & Đời sống (雑談・趣味・週末)</option>
+                <option value="deep_talk">🌸 Trò chuyện sâu & Tâm sự (深い対話・日本生活)</option>
+                <option value="entertainment">🍜 Ẩm thực & Giải trí (グルメ・映画・音楽)</option>
+              </optgroup>
+              <optgroup label="🏪 Tình huống thực tế đời sống">
+                <option value="daily">🏪 Cửa hàng tiện lợi & Mua sắm (コンビニ・買い物)</option>
+                <option value="dining">🍜 Nhà hàng & Quán ăn (飲食店・注文)</option>
+                <option value="travel">🚆 Du lịch & Ga tàu (旅行・駅・道案内)</option>
+                <option value="business">💼 Công sở & Phỏng vấn (ビジネス・面接)</option>
+                <option value="medical">🏥 Y tế & Thủ tục (病院・手続き)</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -544,9 +603,15 @@ export default function DictationSpeakingCard({
         {/* Thanh tiến trình & Nút chức năng */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/30">
-              Ngữ cảnh thực chiến
-            </span>
+            {scenario?.mode === 'deep_talk' || conversationMode === 'deep_talk' ? (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-indigo-500/20 to-pink-500/20 text-indigo-200 border border-indigo-500/40">
+                ☕ Giao tiếp sâu & Làm quen
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                ⚡ Tình huống thực tế
+              </span>
+            )}
             {scenario?.level && (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
                 JLPT {scenario.level}
@@ -877,7 +942,13 @@ export default function DictationSpeakingCard({
               title="Bật/Tắt xem gợi ý câu đáp (Ctrl + H)"
             >
               <Lightbulb className={`w-3.5 h-3.5 ${showReplyIdeas ? 'text-sky-300' : 'text-amber-400'}`} />
-              <span>{showReplyIdeas ? 'Ẩn gợi ý' : '💡 Xem gợi ý câu đáp'}</span>
+              <span>
+                {showReplyIdeas
+                  ? 'Ẩn gợi ý'
+                  : conversationMode === 'deep_talk'
+                  ? '💡 Gợi ý trả lời & hỏi lại'
+                  : '💡 Xem gợi ý câu đáp'}
+              </span>
               <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.5 text-[10px] font-sans font-bold rounded bg-black/40 text-slate-300 border border-slate-600/50">
                 Ctrl+H
               </kbd>

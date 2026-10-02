@@ -1,5 +1,190 @@
 [
   {
+    "id": "session_1790950547655",
+    "scenarioId": "sc_1790950547655",
+    "scenario": {
+      "title": "コンビニでお弁当を買う (Mua cơm hộp tại cửa hàng tiện lợi)",
+      "level": "N4",
+      "topic": "daily",
+      "aiRole": "店員 (Nhân viên cửa hàng)",
+      "userRole": "客 (Khách hàng)",
+      "description": "Bạn vào một cửa hàng tiện lợi để mua một hộp cơm. Nhân viên sẽ hỏi bạn có cần hâm nóng hay không và có cần đũa không."
+    },
+    "completedAt": "2026-10-02T14:15:47.655Z",
+    "turnsCount": 13,
+    "history": [
+      {
+        "speaker": "ai",
+        "text": "お弁当は温めますか。",
+        "vietnamese": "Cơm hộp có cần hâm nóng không ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "はい"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。お箸はお付けしますか。",
+        "vietnamese": "Vâng, tôi hiểu rồi. Bạn có cần đũa không ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "はい。お願いします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "お箸もお付けしました。ご一緒に袋にお入れしますか。",
+        "vietnamese": "Tôi đã để đũa vào rồi ạ. Bạn có muốn tôi cho chung vào túi không?"
+      },
+      {
+        "speaker": "user",
+        "text": "はい。お願いします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。お会計は、合わせて580円になります。",
+        "vietnamese": "Tôi hiểu rồi. Tổng cộng là 580 yên ạ."
+      },
+      {
+        "speaker": "user",
+        "text": "ガローで払ってもいいですか？"
+      },
+      {
+        "speaker": "ai",
+        "text": "はい、PayPay（ペイペイ）でお支払いいただけますよ。",
+        "vietnamese": "Vâng, quý khách có thể thanh toán bằng PayPay ạ."
+      },
+      {
+        "speaker": "user",
+        "text": "はい。売買でお願いします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。PayPayでのお支払いですね。少々お待ちください。",
+        "vietnamese": "Đã hiểu. Thanh toán bằng PayPay phải không ạ. Xin vui lòng đợi một chút."
+      },
+      {
+        "speaker": "user",
+        "text": "はい。お願いします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "お待たせいたしました。PayPayでのお支払い、完了いたしました。レシートはご一緒にお入れしますか。",
+        "vietnamese": "Xin lỗi đã để quý khách đợi. Thanh toán bằng PayPay đã hoàn tất. Quý khách có muốn tôi bỏ hóa đơn vào chung túi không ạ?"
+      }
+    ],
+    "review": {
+      "overallScore": 82,
+      "fluencyFeedback": "Bạn đã hoàn thành tốt mục tiêu giao tiếp cơ bản tại cửa hàng tiện lợi, phản xạ nhanh nhẹn và dùng được các mẫu câu lịch sự. Tuy nhiên, có một số lỗi từ vựng và ngữ pháp nhỏ cần khắc phục để tự nhiên hơn. Hãy tiếp tục luyện tập nhé!",
+      "grammarStrengths": "Bạn đã sử dụng đúng các mẫu câu lịch sự như 「はい。お願いします。」 để đồng ý và yêu cầu, và 「〜てもいいですか」 để xin phép. Cách dùng 「お願いします」 trong ngữ cảnh nhờ nhân viên làm gì đó rất phù hợp.",
+      "grammarImprovements": "• Lượt 8: 'ガローで払ってもいいですか' - Sai từ vựng, không phải 'ガロー' mà là 'PayPay'. Cần chú ý tên phương thức thanh toán.\n• Lượt 10: '売買でお願いします' - Dùng từ '売買' (mua bán) không đúng ngữ cảnh; nên dùng 'PayPayで' hoặc 'それで'.\n• Lượt 8: '払ってもいいですか' - Ngữ pháp đúng nhưng trong ngữ cảnh cửa hàng, người Nhật thường hỏi 'PayPayは使えますか' hoặc 'PayPayで払えますか' tự nhiên hơn.",
+      "detailedImprovements": [
+        {
+          "turn": 8,
+          "userSaid": "ガローで払ってもいいですか？",
+          "corrections": [
+            "PayPayで払ってもいいですか？",
+            "PayPayは使えますか？"
+          ],
+          "explanation": "Bạn đã nhầm tên 'PayPay' thành 'ガロー'. Ngoài ra, cách hỏi '払ってもいいですか' mang nghĩa xin phép, nhưng trong ngữ cảnh thanh toán, người Nhật thường hỏi khả năng sử dụng dịch vụ: 'PayPayは使えますか' hoặc 'PayPayで払えますか' để hỏi xem cửa hàng có chấp nhận không. Cách nói của bạn không sai ngữ pháp nhưng kém tự nhiên hơn."
+        },
+        {
+          "turn": 10,
+          "userSaid": "はい。売買でお願いします。",
+          "corrections": [
+            "はい。PayPayでお願いします。",
+            "はい。それでお願いします。"
+          ],
+          "explanation": "'売買' có nghĩa là 'mua bán' (giao dịch thương mại), không dùng để chỉ phương thức thanh toán. Bạn nên dùng 'PayPayで' hoặc 'それで' (với nó) để thay thế. Trong ngữ cảnh này, nhân viên đã xác nhận PayPay, nên bạn chỉ cần nói 'はい。PayPayでお願いします' hoặc đơn giản 'はい。お願いします' là đủ."
+        }
+      ],
+      "naturalNuances": "Khi thanh toán, người Nhật thường dùng 「〜でお願いします」 để chỉ phương thức thanh toán, ví dụ 「クレジットカードでお願いします」. Nếu không chắc, có thể hỏi 「〜は使えますか」. Ngoài ra, khi nhân viên hỏi có cần túi không, thay vì chỉ nói 「はい」, bạn có thể nói 「はい、お願いします」 hoặc 「いいえ、大丈夫です」 để rõ ràng hơn. Cuối cùng, đừng quên cảm ơn khi nhận hàng: 「ありがとうございます」.",
+      "recommendedVocabulary": [
+        {
+          "word": "温めますか",
+          "reading": "あたためますか",
+          "meaning": "Bạn có muốn hâm nóng không?"
+        },
+        {
+          "word": "お箸をお付けしますか",
+          "reading": "おはしをおつけしますか",
+          "meaning": "Bạn có cần lấy đũa không?"
+        },
+        {
+          "word": "ご一緒に袋にお入れしますか",
+          "reading": "ごいっしょにふくろにおいれしますか",
+          "meaning": "Bạn có muốn cho vào cùng một túi không?"
+        },
+        {
+          "word": "お会計",
+          "reading": "おかいけい",
+          "meaning": "Thanh toán / Tính tiền"
+        },
+        {
+          "word": "PayPayでお願いします",
+          "reading": "ペイペイでおねがいします",
+          "meaning": "Thanh toán bằng PayPay"
+        },
+        {
+          "word": "レシートはご一緒にお入れしますか",
+          "reading": "レシートはごいっしょにおいれしますか",
+          "meaning": "Bạn có muốn cho hóa đơn vào cùng không?"
+        }
+      ],
+      "provider": "deepseek"
+    },
+    "flashcards": [
+      {
+        "id": "vocab_1790950547655yjvy",
+        "word": "温めますか",
+        "reading": "あたためますか",
+        "meaning": "Bạn có muốn hâm nóng không?",
+        "contextSentence": "コンビニでお弁当を買う (Mua cơm hộp tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T14:15:47.655Z"
+      },
+      {
+        "id": "vocab_17909505476551su1",
+        "word": "お箸をお付けしますか",
+        "reading": "おはしをおつけしますか",
+        "meaning": "Bạn có cần lấy đũa không?",
+        "contextSentence": "コンビニでお弁当を買う (Mua cơm hộp tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T14:15:47.655Z"
+      },
+      {
+        "id": "vocab_179095054765550y8",
+        "word": "ご一緒に袋にお入れしますか",
+        "reading": "ごいっしょにふくろにおいれしますか",
+        "meaning": "Bạn có muốn cho vào cùng một túi không?",
+        "contextSentence": "コンビニでお弁当を買う (Mua cơm hộp tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T14:15:47.655Z"
+      },
+      {
+        "id": "vocab_1790950547655luqx",
+        "word": "お会計",
+        "reading": "おかいけい",
+        "meaning": "Thanh toán / Tính tiền",
+        "contextSentence": "コンビニでお弁当を買う (Mua cơm hộp tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T14:15:47.655Z"
+      },
+      {
+        "id": "vocab_179095054765528a4",
+        "word": "PayPayでお願いします",
+        "reading": "ペイペイでおねがいします",
+        "meaning": "Thanh toán bằng PayPay",
+        "contextSentence": "コンビニでお弁当を買う (Mua cơm hộp tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T14:15:47.655Z"
+      },
+      {
+        "id": "vocab_1790950547655xws1",
+        "word": "レシートはご一緒にお入れしますか",
+        "reading": "レシートはごいっしょにおいれしますか",
+        "meaning": "Bạn có muốn cho hóa đơn vào cùng không?",
+        "contextSentence": "コンビニでお弁当を買う (Mua cơm hộp tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T14:15:47.655Z"
+      }
+    ]
+  },
+  {
     "id": "session_1790949583374",
     "scenarioId": "sc_1790949583374",
     "scenario": {

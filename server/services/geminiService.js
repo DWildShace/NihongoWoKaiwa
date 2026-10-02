@@ -185,7 +185,11 @@ const FALLBACK_SCENARIOS = [
  * @param {string} [filter.level='all'] - 'N5' | 'N4' | 'N3' | 'N2' | 'all'
  * @param {string} [filter.topic='all'] - 'daily' | 'dining' | 'travel' | 'business' | 'medical' | 'all'
  */
-export async function generateRandomScenario({ level = 'all', topic = 'all' } = {}) {
+export async function generateRandomScenario({ level = 'all', topic = 'all', mode = 'roleplay' } = {}) {
+  const isDeepTalk =
+    mode === 'deep_talk' ||
+    ['social', 'chitchat', 'deep_talk', 'lifestyle', 'entertainment'].includes(topic);
+
   const levelDescriptions = {
     N5: 'Trình độ N5 (Sơ cấp 1): từ vựng rất đơn giản, câu ngắn gọn, thể ます/です, ngữ pháp cơ bản.',
     N4: 'Trình độ N4 (Sơ cấp 2): câu giao tiếp thường nhật, thể て, thể ない, thể たら, câu hỏi lịch sự vừa phải.',
@@ -195,18 +199,53 @@ export async function generateRandomScenario({ level = 'all', topic = 'all' } = 
   };
 
   const topicDescriptions = {
+    social: 'Chủ đề: Làm quen & Kết bạn mới (初対面・自己紹介: tự giới thiệu, hỏi thăm quê quán, sở thích, lý do sang Nhật, trường học/công ty).',
+    chitchat: 'Chủ đề: Tán gẫu & Đời sống hàng ngày (雑談・週末・趣味: bạn bè, đồng nghiệp giờ nghỉ, anime, manga, nhạc, kế hoạch cuối tuần).',
+    deep_talk: 'Chủ đề: Trò chuyện sâu & Tâm sự (深い対話・日本生活: tâm sự về cuộc sống ở Nhật, bỡ ngỡ văn hóa, khó khăn khi học tiếng, ước mơ tương lai).',
+    lifestyle: 'Chủ đề: Trải nghiệm sống & Văn hóa Nhật (日本生活・文化: thói quen, món ăn, lễ hội, sự khác biệt văn hóa).',
+    entertainment: 'Chủ đề: Ẩm thực & Giải trí (グルメ・エンタメ: ẩm thực, phim ảnh, âm nhạc, cosplay, du lịch).',
     daily: 'Chủ đề: Đời sống & Mua sắm (Konbini, siêu thị, thuê nhà, ngân hàng, tiệm giặt, cắt tóc...).',
     dining: 'Chủ đề: Nhà hàng & Ẩm thực (Quán nhậu Izakaya, tiệm Ramen, tiệm Sushi, quán Cafe, gọi món, thanh toán...).',
     travel: 'Chủ đề: Du lịch & Di chuyển (Ga tàu điện, Shinkansen, sân bay, khách sạn, hỏi đường, mua vé tham quan...).',
     business: 'Chủ đề: Công sở & Phỏng vấn (Phỏng vấn xin việc, trao đổi với đồng nghiệp/cấp trên, Horenso, tiếp khách...).',
     medical: 'Chủ đề: Y tế & Thủ tục (Phòng khám, nhà thuốc, mô tả triệu chứng bệnh, làm thủ tục tại Shi-yakusho...).',
-    all: 'Mọi chủ đề giao tiếp phong phú tại Nhật Bản.',
+    all: isDeepTalk
+      ? 'Chủ đề: Giao lưu kết bạn, làm quen bạn mới hoặc tán gẫu đời sống thân mật.'
+      : 'Mọi chủ đề giao tiếp phong phú tại Nhật Bản.',
   };
 
   if (genAI) {
     try {
-      const prompt = `
-Bạn là chuyên gia sư phạm tiếng Nhật bản xứ và nhà thiết kế hội thoại thực chiến.
+      const prompt = isDeepTalk
+        ? `Bạn là chuyên gia sư phạm tiếng Nhật bản xứ và nhà thiết kế hội thoại thực chiến.
+Hãy tạo MỘT tình huống "GIAO TIẾP SÂU, LÀM QUEN & KẾT BẠN" (Deep Social Chit-Chat / Connection):
+- Cấp độ: ${level !== 'all' ? level : 'N4'} (${levelDescriptions[level] || levelDescriptions.all})
+- Lĩnh vực: ${topic !== 'all' ? topic : 'social'} (${topicDescriptions[topic] || topicDescriptions.all})
+- Mục tiêu: Hai người trò chuyện cởi mở, bình đẳng như hai người bạn, đồng nghiệp hoặc bạn cùng lớp.
+- AI đóng vai: Một người bạn Nhật Bản cởi mở, thân thiện, tò mò tìm hiểu về người học (vd: "友人 (Bạn bè)", "同僚 (Đồng nghiệp)").
+- Người học đóng vai: Chính bản thân người học ("留学生 (Du học sinh)" hoặc "会社員 (Nhân viên mới)").
+- Câu mở đầu của AI: Chào hỏi thân thiện, bắt chuyện tự nhiên và mở lời bằng 1 câu hỏi làm quen gợi mở.
+- Gợi ý trả lời (replyIdea): Gợi ý câu trả lời tự nhiên CÓ KÈM CÂU HỎI NGƯỢC LẠI AI (để người học luyện phản xạ hỏi - đáp hai chiều).
+
+Định dạng JSON:
+{
+  "title": "Tên tình huống tiếng Nhật kèm dịch (vd: 初対面の挨拶と趣味の話 (Làm quen và nói về sở thích))",
+  "level": "${level !== 'all' ? level : 'N4'}",
+  "topic": "${topic !== 'all' ? topic : 'social'}",
+  "mode": "deep_talk",
+  "aiRole": "Vai AI thân thiện (vd: 日本人の友人)",
+  "userRole": "Vai người học (vd: 留学生)",
+  "description": "Mô tả bối cảnh ngắn gọn bằng tiếng Việt (1-2 câu)",
+  "firstTurn": {
+    "aiSentence": "Câu mở đầu tiếng Nhật tự nhiên, thân thiện và có câu hỏi mở",
+    "vietnamese": "Dịch tiếng Việt",
+    "replyIdeas": [
+      { "jp": "Câu gợi ý trả lời + hỏi ngược lại AI (ví dụ: はじめまして！よろしくお願いします。〜さんは？)", "vi": "Dịch tiếng Việt" }
+    ]
+  }
+}
+Chỉ trả về JSON thuần túy.`
+        : `Bạn là chuyên gia sư phạm tiếng Nhật bản xứ và nhà thiết kế hội thoại thực chiến.
 Hãy tạo MỘT tình huống giao tiếp đời sống ngẫu nhiên theo tiêu chí sau:
 - Cấp độ yêu cầu: ${level !== 'all' ? level : 'Ngẫu nhiên N5-N2'} (${levelDescriptions[level] || levelDescriptions.all})
 - Lĩnh vực: ${topic !== 'all' ? topic : 'Ngẫu nhiên'} (${topicDescriptions[topic] || topicDescriptions.all})
@@ -215,10 +254,11 @@ Yêu cầu cụ thể:
 1. "title": Tên tình huống bằng tiếng Nhật kèm dịch tiếng Việt (vd: "コンビニでのお会計 (Thanh toán tại Konbini)").
 2. "level": Cấp độ phù hợp ("${level !== 'all' ? level : 'N4'}").
 3. "topic": Chủ đề ("${topic !== 'all' ? topic : 'daily'}").
-4. "aiRole": Vai của AI (vd: "店員 (Nhân viên thu ngân)").
-5. "userRole": Vai của người học (vd: "客 (Khách mua hàng)").
-6. "description": Mô tả ngắn gọn bối cảnh và mục tiêu giao tiếp bằng tiếng Việt (1-2 câu).
-7. "firstTurn": 
+4. "mode": "roleplay",
+5. "aiRole": Vai của AI (vd: "店員 (Nhân viên thu ngân)").
+6. "userRole": Vai của người học (vd: "客 (Khách mua hàng)").
+7. "description": Mô tả ngắn gọn bối cảnh và mục tiêu giao tiếp bằng tiếng Việt (1-2 câu).
+8. "firstTurn": 
    - "aiSentence": Câu thoại mở đầu của AI bằng tiếng Nhật tự nhiên, ngắn gọn (10-25 ký tự, phù hợp cấp độ ${level !== 'all' ? level : 'yêu cầu'}).
    - "vietnamese": Dịch nghĩa tiếng Việt câu của AI.
    - "replyIdeas": Mảng chứa ĐÚNG 1 câu gợi ý trả lời tự nhiên nhất cho người học ([ { "jp": "...", "vi": "..." } ]).
@@ -228,6 +268,7 @@ Yêu cầu cụ thể:
   "title": "Tên tình huống tiếng Nhật kèm dịch",
   "level": "${level !== 'all' ? level : 'N4'}",
   "topic": "${topic !== 'all' ? topic : 'daily'}",
+  "mode": "roleplay",
   "aiRole": "Vai của AI",
   "userRole": "Vai người học",
   "description": "Mô tả bối cảnh...",
@@ -483,8 +524,19 @@ export function detectFarewellIntent(text = '') {
  * [PHẢN XẠ NHANH] Sinh câu thoại tiếp theo siêu tốc (<0.5s) bằng Text-first
  * Có khả năng tự động nhận diện điểm dừng ngữ nghĩa tự nhiên để cắt đứt vòng lặp chào hỏi
  */
-export async function generateFastNextTurn({ spokenText = '', turnIndex = 1, totalTurns = 10, history = [], scenario = {} }) {
+export async function generateFastNextTurn({
+  spokenText = '',
+  turnIndex = 1,
+  totalTurns = 10,
+  history = [],
+  scenario = {},
+  mode = 'roleplay',
+}) {
   const actualUserText = (spokenText || '').trim() || 'はい';
+  const isDeepTalk =
+    scenario.mode === 'deep_talk' ||
+    mode === 'deep_talk' ||
+    ['social', 'chitchat', 'deep_talk', 'lifestyle', 'entertainment'].includes(scenario.topic);
 
   // 1. Phân tích ngữ nghĩa xem đã bước vào vòng lặp chào tạm biệt hay chưa
   const isUserSayingFarewell = detectFarewellIntent(actualUserText);
@@ -498,8 +550,36 @@ export async function generateFastNextTurn({ spokenText = '', turnIndex = 1, tot
         .map((h) => `${h.speaker === 'ai' ? scenario.aiRole || 'AI' : scenario.userRole || 'Học viên'}: ${h.text}`)
         .join('\n');
 
-      const promptText = `
-Bạn là đối tác giao tiếp tiếng Nhật bản xứ, đang nhập vai "${scenario.aiRole || 'Đối tác'}" để trò chuyện trực tiếp với "${scenario.userRole || 'Khách/Học viên'}".
+      const promptText = isDeepTalk
+        ? `Bạn là một người bạn / đồng nghiệp Nhật Bản thân thiện, ấm áp và cởi mở, đang trò chuyện làm quen và chia sẻ sâu với "${scenario.userRole || 'bạn của mình'}".
+Bối cảnh: "${scenario.title || 'Trò chuyện kết bạn'}" - ${scenario.description || ''}.
+Lượt hiện tại: ${turnIndex}/${totalTurns}.
+
+Lịch sử cuộc hội thoại:
+${conversationContext || 'Bắt đầu cuộc trò chuyện.'}
+
+Người học vừa nói: "${actualUserText}"
+
+QUY TẮC HỘI THOẠI GIAO TIẾP SÂU & KẾT BẠN HAI CHIỀU:
+1. Bạn là người bạn bình đẳng, lắng nghe và trả lời chân thành.
+2. Luôn có aizuchi cảm xúc: へえ！そうなんですか！/ 分かります！/ いいですね！
+3. Kể một ý ngắn gọn về trải nghiệm/sở thích của chính bạn.
+4. BẮT BUỘC kết thúc câu bằng câu hỏi gợi mở thân thiện hướng về người học (ví dụ: 〜さんはどうですか？).
+5. Không kết thúc sớm (chỉ kết thúc khi chạm ${totalTurns} lượt hoặc người học chủ động chào tạm biệt).
+6. "replyIdea": Gợi ý câu trả lời tự nhiên + câu hỏi ngược lại bạn (ví dụ: "私も〜が好きです。〜さんは？").
+
+Định dạng JSON:
+{
+  "aiSentence": "Câu thoại tiếng Nhật tự nhiên, có aizuchi, chia sẻ và câu hỏi gợi mở",
+  "vietnamese": "Dịch tiếng Việt câu của AI",
+  "isCompleted": false,
+  "replyIdea": {
+    "jp": "Câu gợi ý trả lời + hỏi ngược lại bạn",
+    "vi": "Dịch tiếng Việt"
+  }
+}
+Chỉ trả về JSON thuần túy.`
+        : `Bạn là đối tác giao tiếp tiếng Nhật bản xứ, đang nhập vai "${scenario.aiRole || 'Đối tác'}" để trò chuyện trực tiếp với "${scenario.userRole || 'Khách/Học viên'}".
 Bối cảnh tình huống: "${scenario.title || 'Hội thoại hàng ngày'}" - ${scenario.description || ''}.
 Lượt hiện tại: ${turnIndex}/${totalTurns}.
 
@@ -534,7 +614,7 @@ Chỉ trả về JSON thuần túy.`;
       const { text: responseText } = await callGeminiWithFallback([promptText], {
         responseMimeType: 'application/json',
         temperature: 0.7,
-        maxOutputTokens: 250,
+        maxOutputTokens: 600,
       });
 
       const parsed = JSON.parse(responseText);

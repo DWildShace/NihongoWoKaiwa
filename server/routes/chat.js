@@ -75,8 +75,8 @@ router.get('/tts', async (req, res) => {
  */
 router.post('/start', async (req, res) => {
   try {
-    const { level = 'all', topic = 'all', provider } = req.body || {};
-    const scenarioData = await generateRandomScenario({ level, topic, provider });
+    const { level = 'all', topic = 'all', mode = 'roleplay', provider } = req.body || {};
+    const scenarioData = await generateRandomScenario({ level, topic, mode, provider });
     res.json({ success: true, data: scenarioData });
   } catch (err) {
     console.error('[API /chat/start ERROR]:', err);
@@ -90,13 +90,14 @@ router.post('/start', async (req, res) => {
  */
 router.post('/fast-turn', async (req, res) => {
   try {
-    const { spokenText = '', turnIndex = 1, totalTurns = 10, history = [], scenario = {}, provider } = req.body;
+    const { spokenText = '', turnIndex = 1, totalTurns = 10, history = [], scenario = {}, mode, provider } = req.body;
     const result = await generateFastNextTurn({
       spokenText,
       turnIndex,
       totalTurns,
       history,
       scenario,
+      mode,
       provider,
     });
     res.json({ success: true, data: result });

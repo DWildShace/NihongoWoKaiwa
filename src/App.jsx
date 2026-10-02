@@ -49,6 +49,19 @@ export default function App() {
   // Filter States for Scenarios
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedTopic, setSelectedTopic] = useState('all');
+  const [conversationMode, setConversationMode] = useState(() => {
+    try {
+      return localStorage.getItem('nihonspeak_conversation_mode') || 'roleplay';
+    } catch {
+      return 'roleplay';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nihonspeak_conversation_mode', conversationMode);
+    } catch {}
+  }, [conversationMode]);
 
   // Flashcards & Selection
   const [flashcards, setFlashcards] = useState(() => {
@@ -203,6 +216,7 @@ export default function App() {
   const handleRandomScenario = async (filterOverrides = {}) => {
     const level = filterOverrides.level !== undefined ? filterOverrides.level : selectedLevel;
     const topic = filterOverrides.topic !== undefined ? filterOverrides.topic : selectedTopic;
+    const mode = filterOverrides.mode !== undefined ? filterOverrides.mode : conversationMode;
 
     setIsLoadingScenario(true);
     setTurnIndex(1);
@@ -213,7 +227,7 @@ export default function App() {
       const res = await fetch('/api/chat/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level, topic }),
+        body: JSON.stringify({ level, topic, mode }),
       });
       if (!res.ok) {
         console.warn('[Start Scenario] Server trả về mã lỗi:', res.status);
@@ -278,6 +292,7 @@ export default function App() {
           totalTurns: TOTAL_TURNS,
           history: updatedHistory,
           scenario,
+          mode: conversationMode,
         }),
       });
 
@@ -484,13 +499,34 @@ export default function App() {
             totalTurns={TOTAL_TURNS}
             selectedLevel={selectedLevel}
             selectedTopic={selectedTopic}
+            conversationMode={conversationMode}
+            onModeChange={(newMode) => {
+              setConversationMode(newMode);
+              let newTopic = selectedTopic;
+              if (newMode === 'deep_talk' && ['daily', 'dining', 'travel', 'medical', 'business'].includes(selectedTopic)) {
+                newTopic = 'social';
+                setSelectedTopic('social');
+              } else if (newMode === 'roleplay' && ['social', 'chitchat', 'deep_talk'].includes(selectedTopic)) {
+                newTopic = 'daily';
+                setSelectedTopic('daily');
+              }
+              handleRandomScenario({ mode: newMode, topic: newTopic });
+            }}
             onLevelChange={(lvl) => {
               setSelectedLevel(lvl);
               handleRandomScenario({ level: lvl });
             }}
             onTopicChange={(tpc) => {
               setSelectedTopic(tpc);
-              handleRandomScenario({ topic: tpc });
+              let inferredMode = conversationMode;
+              if (['social', 'chitchat', 'deep_talk', 'entertainment'].includes(tpc)) {
+                inferredMode = 'deep_talk';
+                setConversationMode('deep_talk');
+              } else if (['daily', 'dining', 'travel', 'business', 'medical'].includes(tpc)) {
+                inferredMode = 'roleplay';
+                setConversationMode('roleplay');
+              }
+              handleRandomScenario({ topic: tpc, mode: inferredMode });
             }}
             onRandomScenario={() => handleRandomScenario()}
             onSubmitSpeaking={handleSubmitSpeaking}
