@@ -1,6 +1,7 @@
 // server/services/geminiService.js
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { annotateSentence, normalizeToHiragana } from './kuromojiService.js';
+import { synthesizeJapaneseAudio } from './ttsService.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -10,29 +11,39 @@ if (apiKey && apiKey.trim() && apiKey !== 'your_gemini_api_key_here') {
   genAI = new GoogleGenerativeAI(apiKey.trim());
 }
 
-// Danh sách các model theo thứ tự ưu tiên (các model đang hoạt động tốt nhất cho API key này)
+// Danh sách các model hoạt động nhanh nhất cho phản xạ hội thoại
+// (Đã kiểm tra thực nghiệm: gemini-3.5-flash-lite đạt ~800ms, gemini-3.1-flash-lite đạt ~1000ms)
 const CANDIDATE_MODELS = [
-  'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
   'gemini-3.1-flash-lite',
-  'gemini-flash-latest',
-  'gemini-3.8-flash',
+  'gemini-flash-lite-latest',
 ];
 
+// Active Model Cache: lưu model thành công gần nhất để gọi thẳng, không thử lại
+let activeModel = 'gemini-3.5-flash-lite';
+
 /**
- * Gọi Gemini với cơ chế tự động thử lần lượt các model dự phòng nếu bị 503 hoặc 429
+ * Gọi Gemini với cơ chế Active Model Cache + tự động thử model dự phòng nếu lỗi
  */
-async function callGeminiWithFallback(contents, generationConfig = {}) {
+export async function callGeminiWithFallback(contents, generationConfig = {}) {
   if (!genAI) throw new Error('Chưa cấu hình API Key');
 
+  // Ưu tiên model đang hoạt động tốt nhất
+  const modelsToTry = [
+    activeModel,
+    ...CANDIDATE_MODELS.filter((m) => m !== activeModel),
+  ];
+
   let lastError = null;
-  for (const modelName of CANDIDATE_MODELS) {
+  for (const modelName of modelsToTry) {
     try {
       const model = genAI.getGenerativeModel({
         model: modelName,
         generationConfig,
       });
       const result = await model.generateContent(contents);
+      // Lưu lại model thành công cho các lần gọi tiếp theo
+      activeModel = modelName;
       return { text: result.response.text(), modelName };
     } catch (err) {
       console.warn(`[GEMINI FALLBACK] Model ${modelName} (${err.status || err.message}), thử model tiếp theo...`);
@@ -488,10 +499,15 @@ Chỉ trả về JSON thuần túy.`;
       const { text: responseText } = await callGeminiWithFallback([promptText], {
         responseMimeType: 'application/json',
         temperature: 0.7,
+        maxOutputTokens: 250,
       });
 
       const parsed = JSON.parse(responseText);
       const aiText = parsed.aiSentence || 'かしこまりました。';
+
+      // [PRE-WARMING TTS]: Kích hoạt tổng hợp âm thanh ngay lập tức vào RAM cache ngầm
+      synthesizeJapaneseAudio(aiText, { voice: 'nanami', rate: 1.0 }).catch(() => {});
+
       const annotated = await annotateSentence(aiText);
       const normalizedHira = await normalizeToHiragana(aiText);
 

@@ -3,10 +3,11 @@ import express from 'express';
 import multer from 'multer';
 import {
   generateRandomScenario,
-  evaluateUserAudioAndRespond,
   generateFastNextTurn,
   generateSessionComprehensiveReview,
-} from '../services/geminiService.js';
+  getAvailableProviders,
+} from '../services/aiRouter.js';
+import { evaluateUserAudioAndRespond } from '../services/geminiService.js';
 import { annotateSentence, normalizeToHiragana, calculateHiraganaSimilarity } from '../services/kuromojiService.js';
 import { synthesizeJapaneseAudio, JAPANESE_VOICES } from '../services/ttsService.js';
 
@@ -14,6 +15,14 @@ const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
+});
+
+/**
+ * Lấy danh sách các nhà cung cấp AI đang khả dụng (Gemini / DeepSeek)
+ * GET /api/chat/providers
+ */
+router.get('/providers', (req, res) => {
+  res.json({ success: true, data: getAvailableProviders() });
 });
 
 /**
@@ -57,8 +66,8 @@ router.get('/tts', async (req, res) => {
  */
 router.post('/start', async (req, res) => {
   try {
-    const { level = 'all', topic = 'all' } = req.body || {};
-    const scenarioData = await generateRandomScenario({ level, topic });
+    const { level = 'all', topic = 'all', provider } = req.body || {};
+    const scenarioData = await generateRandomScenario({ level, topic, provider });
     res.json({ success: true, data: scenarioData });
   } catch (err) {
     console.error('[API /chat/start ERROR]:', err);
@@ -72,13 +81,14 @@ router.post('/start', async (req, res) => {
  */
 router.post('/fast-turn', async (req, res) => {
   try {
-    const { spokenText = '', turnIndex = 1, totalTurns = 10, history = [], scenario = {} } = req.body;
+    const { spokenText = '', turnIndex = 1, totalTurns = 10, history = [], scenario = {}, provider } = req.body;
     const result = await generateFastNextTurn({
       spokenText,
       turnIndex,
       totalTurns,
       history,
       scenario,
+      provider,
     });
     res.json({ success: true, data: result });
   } catch (err) {
@@ -93,10 +103,11 @@ router.post('/fast-turn', async (req, res) => {
  */
 router.post('/review-session', async (req, res) => {
   try {
-    const { scenario = {}, sessionHistory = [] } = req.body;
+    const { scenario = {}, sessionHistory = [], provider } = req.body;
     const review = await generateSessionComprehensiveReview({
       scenario,
       sessionHistory,
+      provider,
     });
     res.json({ success: true, data: review });
   } catch (err) {

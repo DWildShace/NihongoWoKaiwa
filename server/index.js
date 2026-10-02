@@ -21,6 +21,8 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     app: 'NihonSpeak (日本語会話)',
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here'),
+    deepseekConfigured: Boolean(process.env.DEEPSEEK_API_KEY && process.env.DEEPSEEK_API_KEY !== 'your_deepseek_api_key_here'),
+    preferredProvider: process.env.AI_PROVIDER || 'gemini',
   });
 });
 
@@ -30,7 +32,9 @@ app.use('/api/chat', chatRouter);
 // Khởi động server và làm nóng Kuromoji tokenizer
 const server = app.listen(PORT, async () => {
   console.log(`🚀 [BACKEND] NihonSpeak Server đang chạy tại: http://localhost:${PORT}`);
-  console.log(`🔑 [GEMINI] Trạng thái API Key: ${Boolean(process.env.GEMINI_API_KEY) ? 'Đã cấu hình' : 'Chưa cấu hình (Chế độ Mock sẵn sàng)'}`);
+  console.log(`🔑 [GEMINI] API Key: ${Boolean(process.env.GEMINI_API_KEY) ? 'Đã cấu hình' : 'Chưa cấu hình'}`);
+  console.log(`🔑 [DEEPSEEK] API Key: ${Boolean(process.env.DEEPSEEK_API_KEY) ? 'Đã cấu hình' : 'Chưa cấu hình (tùy chọn)'}`);
+  console.log(`⚙️ [PROVIDER] AI ưu tiên: ${process.env.AI_PROVIDER || 'gemini'}`);
 
   try {
     await getTokenizer();

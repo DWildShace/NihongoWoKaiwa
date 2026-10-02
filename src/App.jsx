@@ -194,10 +194,8 @@ export default function App() {
         ];
         setHistory(fullHistory);
 
-        // Phát âm thanh của AI ngay lập tức
-        setTimeout(() => {
-          speakJapanese(nextTurn.aiSentence, 1.0);
-        }, 200);
+        // Phát âm thanh của AI ngay lập tức (không delay)
+        speakJapanese(nextTurn.aiSentence, 1.0);
 
         // Nếu chạm lượt N=10 hoặc là lượt kết thúc: Tự động kích hoạt tổng kết
         if (isFinalTurn || nextIdx > TOTAL_TURNS) {
