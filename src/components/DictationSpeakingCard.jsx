@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import AudioPlayerWidget from './AudioPlayerWidget';
 import { computeRealtimeMatch } from '../utils/similarity';
-import { playUnlockSuccessSound, playRecordStartSound } from '../utils/soundEffects';
+import { playUnlockSuccessSound, playRecordStartSound, speakJapanese } from '../utils/soundEffects';
 import { AudioRecorder } from '../utils/audioRecorder';
 
 export default function DictationSpeakingCard({
@@ -335,7 +335,7 @@ export default function DictationSpeakingCard({
       // 2. Phím tắt Bật / Tắt Mic: Ctrl + M
       if ((e.key === 'm' || e.key === 'M') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        if (hasUnlocked && !isEvaluatingSpeaking) {
+        if (hasUnlocked && !isEvaluatingSpeaking && !currentTurn?.isCompleted) {
           if (isRecording) {
             handleStopRecording();
           } else {
@@ -472,9 +472,17 @@ export default function DictationSpeakingCard({
               </span>
             )}
             {/* Huy hiệu tiến trình lượt 1/10 */}
-            <span className="px-3 py-0.5 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+            <span
+              className={`px-3 py-0.5 rounded-full text-xs font-black border flex items-center gap-1.5 shadow-sm transition-all ${
+                currentTurn?.isCompleted
+                  ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-emerald-500/20'
+                  : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+              }`}
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Hội thoại: Lượt {Math.min(turnIndex, totalTurns)} / {totalTurns}
+              {currentTurn?.isCompleted
+                ? `🎉 Hoàn thành (${Math.min(turnIndex, totalTurns)}/${totalTurns} lượt)`
+                : `Hội thoại: Lượt ${Math.min(turnIndex, totalTurns)} / ${totalTurns}`}
             </span>
           </div>
 
@@ -490,8 +498,8 @@ export default function DictationSpeakingCard({
               <span>Phím tắt</span>
             </button>
 
-            {/* Nút Hoàn thành sớm */}
-            {turnIndex >= 2 && onFinishSession && (
+            {/* Nút Hoàn thành sớm (chỉ hiện khi hội thoại chưa kết thúc) */}
+            {turnIndex >= 2 && onFinishSession && !currentTurn?.isCompleted && (
               <button
                 onClick={onFinishSession}
                 disabled={isReviewingSession || isEvaluatingSpeaking}
@@ -509,7 +517,7 @@ export default function DictationSpeakingCard({
         <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden flex">
           <div
             className="bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-400 h-full transition-all duration-500 rounded-full"
-            style={{ width: `${(Math.min(turnIndex, totalTurns) / totalTurns) * 100}%` }}
+            style={{ width: `${currentTurn?.isCompleted ? 100 : (Math.min(turnIndex, totalTurns) / totalTurns) * 100}%` }}
           />
         </div>
 
@@ -543,8 +551,76 @@ export default function DictationSpeakingCard({
         </div>
       </div>
 
-      {/* 2. BƯỚC 1: NGHE & GÕ DICTATION (≥ 80%) */}
-      <div className="space-y-4">
+      {/* NẾU HỘI THOẠI ĐÃ ĐẠT ĐIỂM DỪNG TỰ NHIÊN / HOÀN THÀNH */}
+      {currentTurn?.isCompleted ? (
+        <div className="rounded-3xl p-6 lg:p-8 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-950 border border-emerald-500/40 space-y-6 text-center animate-fadeIn shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 mx-auto flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/20">
+            <CheckCircle2 className="w-9 h-9" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              Điểm dừng tự nhiên đã đạt được
+            </span>
+            <h3 className="text-xl lg:text-2xl font-bold text-white tracking-tight">
+              🎉 Cuộc hội thoại đã kết thúc thành công!
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto leading-relaxed">
+              Mục tiêu giao tiếp của tình huống đã được giải quyết trọn vẹn ({Math.min(turnIndex, totalTurns)} lượt). Hai bên đã trao đổi lời chào kết thúc phù hợp với văn hóa Nhật Bản.
+            </p>
+          </div>
+
+          {/* Hộp hiển thị câu chào kết thúc của AI */}
+          <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800/90 text-left space-y-2.5 max-w-xl mx-auto shadow-inner">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400">
+                {scenario?.aiRole || 'Đối tác'} (Lời chào kết thúc):
+              </span>
+              <button
+                type="button"
+                onClick={() => speakJapanese(currentTurn?.aiSentence, 1.0)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition-all cursor-pointer shadow-sm"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>Nghe lại phát âm</span>
+              </button>
+            </div>
+            <p className="text-base sm:text-lg font-jp font-bold text-white leading-relaxed">
+              {currentTurn?.aiSentence}
+            </p>
+            {currentTurn?.vietnamese && (
+              <p className="text-xs sm:text-sm text-slate-400 italic">
+                {currentTurn.vietnamese}
+              </p>
+            )}
+          </div>
+
+          {/* Trạng thái Tổng kết AI */}
+          <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 max-w-xl mx-auto flex items-center justify-center gap-2.5 text-xs text-indigo-300">
+            <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 animate-spin" />
+            <span>
+              {isReviewingSession
+                ? 'Gemini Master Coach đang phân tích toàn bộ diễn biến các lượt nói...'
+                : 'Bản nhận xét đánh giá toàn diện & Flashcard đã sẵn sàng bên dưới 👇'}
+            </span>
+          </div>
+
+          {/* Nút hành động */}
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button
+              onClick={onRandomScenario}
+              disabled={isLoadingScenario}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-sm transition-all shadow-lg shadow-rose-500/30 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-50"
+            >
+              <Dice5 className="w-4 h-4" />
+              <span>🎲 Luyện tình huống mới</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* 2. BƯỚC 1: NGHE & GÕ DICTATION (≥ 80%) */}
+          <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center border border-emerald-500/40">
@@ -844,6 +920,8 @@ export default function DictationSpeakingCard({
           )}
         </div>
       </div>
+        </>
+      )}
 
       {/* 4. MODAL HƯỚNG DẪN PHÍM TẮT (KEYBOARD SHORTCUTS MODAL) */}
       {showShortcutsModal && (

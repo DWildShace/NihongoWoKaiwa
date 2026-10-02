@@ -57,6 +57,7 @@ export async function callDeepSeek(messages, options = {}) {
 
 /**
  * [DEEPSEEK FAST-TURN] Lượt đối đáp phản xạ nhanh bằng DeepSeek-V3
+ * Có khả năng tự động nhận diện điểm dừng ngữ nghĩa tự nhiên để cắt đứt vòng lặp chào hỏi
  */
 export async function generateDeepSeekFastNextTurn({
   spokenText = '',
@@ -66,7 +67,26 @@ export async function generateDeepSeekFastNextTurn({
   scenario = {},
 }) {
   const actualUserText = (spokenText || '').trim() || 'はい';
-  const isFinal = turnIndex >= totalTurns;
+
+  // 1. Phân tích ngữ nghĩa xem đã bước vào vòng lặp chào tạm biệt hay chưa
+  const farewellPatterns = [
+    /失礼(します|いたしました|しました)?/i,
+    /ありがとう(ございます|ございました)?/i,
+    /どうも/i,
+    /さようなら/i,
+    /また(ね|な|明日|今度|来ます|のご利用|のご来館|のお越し|いつでも)/i,
+    /気をつけて/i,
+    /お疲れ様(でした)?/i,
+    /ごちそうさま(でした)?/i,
+    /バイバイ/i,
+    /じゃあ/i,
+    /良い(一日|お年|週末)を/i,
+    /お大事に/i,
+  ];
+  const isUserSayingFarewell = farewellPatterns.some((pattern) => pattern.test(actualUserText));
+  const previousFarewells = history.filter((h) => farewellPatterns.some((p) => p.test(h.text)));
+  const isFarewellLoop = turnIndex >= 2 && isUserSayingFarewell && previousFarewells.length >= 1;
+  const isForcedFinal = turnIndex >= totalTurns;
 
   const conversationContext = history
     .map((h) => `${h.speaker === 'ai' ? scenario.aiRole || 'AI' : scenario.userRole || 'Học viên'}: ${h.text}`)
@@ -74,19 +94,27 @@ export async function generateDeepSeekFastNextTurn({
 
   const systemPrompt = `Bạn là đối tác giao tiếp tiếng Nhật bản xứ, đang nhập vai "${scenario.aiRole || 'Đối tác'}" để trò chuyện trực tiếp với "${scenario.userRole || 'Khách/Học viên'}".
 Bối cảnh tình huống: "${scenario.title || 'Hội thoại hàng ngày'}" - ${scenario.description || ''}.
-Lượt trò chuyện hiện tại: ${turnIndex}/${totalTurns}.
+Lượt hiện tại: ${turnIndex}/${totalTurns}.
 
-NHIỆM VỤ:
-1. Đáp lại 1-2 câu tiếng Nhật tự nhiên, ngắn gọn, chuẩn vai "${scenario.aiRole || 'AI'}", duy trì mạch hội thoại phù hợp với câu người học vừa nói. ${isFinal ? '(Đây là lượt cuối, hãy nói lời chào kết thúc hoặc cảm ơn phù hợp).' : ''}
-2. Đưa ra ĐÚNG 1 câu gợi ý trả lời tự nhiên nhất cho người học ở lượt kế tiếp (kèm dịch tiếng Việt).
+QUY TẮC KẾT THÚC HỘI THOẠI TỰ NHIÊN (RẤT QUAN TRỌNG ĐỂ TRÁNH VÒNG LẶP CHÀO HỎI):
+1. Đánh giá xem mục tiêu giao tiếp của tình huống đã HOÀN THÀNH TRỌN VẸN hay chưa (ví dụ: đã mượn sách xong, mua hàng thanh toán xong, hoặc hai bên đang nói lời chào tạm biệt / cảm ơn cuối cùng).
+2. NẾU tình huống đã đi đến điểm kết thúc tự nhiên HOẶC người học đã chào tạm biệt (như 失礼します, ありがとうございます, また来ます...):
+   - Hãy đáp lại 1 câu chào tạm biệt lịch sự CUỐI CÙNG (Final Farewell).
+   - Đặt "isCompleted": true để KẾT THÚC hội thoại, KHÔNG kéo dài nữa.
+   - Không đưa ra thêm gợi ý tiếp theo (hoặc để "replyIdea": null).
+3. NẾU tình huống vẫn còn tiếp diễn để đạt mục tiêu:
+   - Đáp lại 1-2 câu tự nhiên duy trì cuộc trò chuyện.
+   - Đặt "isCompleted": false.
+   - Đưa ra ĐÚNG 1 câu gợi ý trả lời tự nhiên ở "replyIdea".
 
 Định dạng JSON bắt buộc:
 {
-  "aiSentence": "Câu thoại tiếp theo bằng tiếng Nhật",
+  "aiSentence": "Câu thoại tiếng Nhật của AI",
   "vietnamese": "Dịch nghĩa tiếng Việt của câu AI",
+  "isCompleted": true hoặc false,
   "replyIdea": {
-    "jp": "1 câu gợi ý trả lời tiếng Nhật tự nhiên nhất",
-    "vi": "Dịch nghĩa tiếng Việt câu gợi ý"
+    "jp": "1 câu gợi ý trả lời (hoặc null nếu isCompleted là true)",
+    "vi": "Dịch tiếng Việt"
   }
 }`;
 
@@ -106,6 +134,9 @@ Người học vừa nói: "${actualUserText}"`;
   const parsed = JSON.parse(content);
   const aiText = parsed.aiSentence || 'かしこまりました。';
 
+  // Quyết định kết thúc: Nếu AI đánh dấu hoàn thành, hoặc rơi vào vòng lặp chào hỏi, hoặc chạm giới hạn 10 lượt
+  const isFinished = parsed.isCompleted === true || isFarewellLoop || isForcedFinal;
+
   // [PRE-WARMING TTS]: Kích hoạt tổng hợp âm thanh ngay lập tức vào RAM cache ngầm
   synthesizeJapaneseAudio(aiText, { voice: 'nanami', rate: 1.0 }).catch(() => {});
 
@@ -119,10 +150,13 @@ Người học vừa nói: "${actualUserText}"`;
       furiganaTokens: annotated.furiganaTokens,
       normalizedHiragana: normalizedHira,
       vietnamese: parsed.vietnamese || '',
-      replyIdeas: parsed.replyIdea ? [parsed.replyIdea] : [{ jp: 'ありがとうございます。', vi: 'Cảm ơn bạn.' }],
+      isCompleted: isFinished,
+      replyIdeas: isFinished
+        ? []
+        : (parsed.replyIdea ? [parsed.replyIdea] : [{ jp: 'ありがとうございます。', vi: 'Cảm ơn bạn.' }]),
     },
     turnIndex,
-    isFinalTurn: isFinal,
+    isFinalTurn: isFinished,
     provider: 'deepseek',
   };
 }

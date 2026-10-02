@@ -195,11 +195,20 @@ export default function App() {
         setHistory(fullHistory);
 
         // Phát âm thanh của AI ngay lập tức (không delay)
-        speakJapanese(nextTurn.aiSentence, 1.0);
+        if (isFinalTurn || nextIdx > TOTAL_TURNS || nextTurn.isCompleted) {
+          let hasTriggeredReview = false;
+          const triggerFinish = () => {
+            if (hasTriggeredReview) return;
+            hasTriggeredReview = true;
+            handleFinishSession(fullHistory);
+          };
 
-        // Nếu chạm lượt N=10 hoặc là lượt kết thúc: Tự động kích hoạt tổng kết
-        if (isFinalTurn || nextIdx > TOTAL_TURNS) {
-          handleFinishSession(fullHistory);
+          // Phát lời chào kết thúc của AI, sau đó kích hoạt bảng đánh giá tổng kết
+          speakJapanese(nextTurn.aiSentence, 1.0, triggerFinish);
+          // Fallback timer đề phòng sự kiện onended không kích hoạt
+          setTimeout(triggerFinish, 3500);
+        } else {
+          speakJapanese(nextTurn.aiSentence, 1.0);
         }
       }
     } catch (err) {
