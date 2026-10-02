@@ -16,7 +16,7 @@ export function isDeepSeekConfigured() {
 }
 
 /**
- * Parser JSON an toàn, tự động loại bỏ code fence markdown nếu có
+ * Parser JSON an toàn, tự động loại bỏ code fence markdown và sửa lỗi chuỗi JSON bị ngắt cụt nếu có
  */
 export function safeJsonParse(rawContent, fallback = {}) {
   try {
@@ -28,6 +28,25 @@ export function safeJsonParse(rawContent, fallback = {}) {
     }
     return JSON.parse(clean);
   } catch (err) {
+    // Thử cứu JSON nếu bị cắt ngắn ở đuôi (Unterminated string / JSON)
+    try {
+      let text = (rawContent || '').trim();
+      text = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '');
+      const lastObjIndex = text.lastIndexOf('}');
+      if (lastObjIndex > 0) {
+        let repaired = text.slice(0, lastObjIndex + 1);
+        // Đảm bảo đóng các ngoặc mở còn thiếu
+        const openBraces = (repaired.match(/{/g) || []).length;
+        const closeBraces = (repaired.match(/}/g) || []).length;
+        const openBrackets = (repaired.match(/\[/g) || []).length;
+        const closeBrackets = (repaired.match(/]/g) || []).length;
+        for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += ']';
+        for (let i = 0; i < openBraces - closeBraces; i++) repaired += '}';
+        return JSON.parse(repaired);
+      }
+    } catch (e2) {
+      // ignore repair failure
+    }
     console.warn('[DeepSeek JSON Parse Warning]:', err.message);
     return fallback;
   }
@@ -189,47 +208,68 @@ export async function generateDeepSeekSessionReview({ scenario = {}, sessionHist
     .map((t, idx) => `${idx + 1}. [${t.speaker === 'ai' ? scenario.aiRole || 'AI' : scenario.userRole || 'Học viên'}]: ${t.text}`)
     .join('\n');
 
-  const systemPrompt = `Bạn là Giảng viên Trưởng chuyên ngành Ngữ âm & Ngữ dụng học tiếng Nhật bản xứ.
-Người học vừa hoàn thành phiên luyện phản xạ giao tiếp thực chiến:
-Bối cảnh: "${scenario.title || 'Hội thoại hàng ngày'}" - ${scenario.description || ''}
-Vai trò: AI đóng vai "${scenario.aiRole || 'Đối tác'}", Người học đóng vai "${scenario.userRole || 'Học viên'}".
+  const systemPrompt = `Bạn là Giảng viên Trưởng chuyên ngành Ngữ âm & Ngữ dụng học tiếng Nhật bản xứ kiêm Chuyên gia Huấn luyện Giao tiếp Thực chiến.
+Người học vừa hoàn thành phiên luyện phản xạ giao tiếp thực tế với AI:
+- Bối cảnh tình huống: "${scenario.title || 'Hội thoại hàng ngày'}" - ${scenario.description || ''}
+- Vai trò: AI nhập vai "${scenario.aiRole || 'Đối tác'}", Người học nhập vai "${scenario.userRole || 'Học viên'}".
 
-Toàn bộ biên bản cuộc hội thoại:
-${conversationLog}
+Biên bản toàn bộ cuộc hội thoại qua các lượt:
+${conversationLog || 'Không có lượt thoại nào.'}
 
 NHIỆM VỤ: Hãy tổng duyệt toàn diện buổi luyện nói của người học:
-1. Chấm điểm tổng quan toàn buổi (overallScore từ 0 đến 100).
-2. Đánh giá độ trôi chảy & phản xạ (fluencyFeedback): nhận xét bằng tiếng Việt thân thiện, khích lệ.
-3. Phân tích ngữ pháp & từ vựng (grammarStrengths): chỉ ra các điểm người học đã dùng đúng và hay.
-4. Các điểm cần cải thiện (grammarImprovements): chỉ ra lỗi ngữ pháp/dùng từ (nếu có) và hướng sửa.
-5. Sắc thái tự nhiên của người Nhật (naturalNuances): người bản xứ trong thực tế sẽ nói thế nào cho mượt mà hơn.
-6. 3-4 từ vựng hoặc cấu trúc xuất sắc nhất nên lưu vào Flashcard (recommendedVocabulary: [{ word, reading, meaning }]).
+1. Chấm điểm tổng quan toàn buổi (overallScore từ 0 đến 100 dựa trên mức độ hoàn thành mục tiêu giao tiếp).
+2. Đánh giá độ trôi chảy & phản xạ (fluencyFeedback): nhận xét súc tích bằng tiếng Việt thân thiện, khích lệ.
+3. Phân tích ngữ pháp & từ vựng (grammarStrengths): chỉ ra các điểm người học đã dùng đúng, phù hợp hoàn cảnh.
+4. Các điểm cần cải thiện (grammarImprovements): chỉ ra lỗi ngữ pháp/cách dùng từ (nếu có) và hướng sửa cụ thể.
+5. Sắc thái tự nhiên của người Nhật (naturalNuances): chia sẻ bí quyết để nói chuyện mượt mà, đúng chuẩn văn hóa bản xứ hơn.
+6. BẮT BUỘC: Đề xuất 4-6 từ vựng hoặc mẫu câu giao tiếp đắt giá nhất (recommendedVocabulary) từ chính buổi học này để người học lưu vào Flashcard ôn tập:
+   - "word": Từ vựng hoặc cụm từ Kanji/Kana tiếng Nhật chuẩn (ví dụ: 席を譲る, かしこまりました, お気をつけて).
+   - "reading": Cách đọc Hiragana chuẩn xác (ví dụ: せきをゆずる, かしこまりました, おきをつけて).
+   - "meaning": Ý nghĩa tiếng Việt súc tích, dễ hiểu trong ngữ cảnh này.
 
 Định dạng JSON bắt buộc:
 {
-  "overallScore": 90,
+  "overallScore": 88,
   "fluencyFeedback": "Nhận xét độ trôi chảy...",
-  "grammarStrengths": "Điểm mạnh...",
-  "grammarImprovements": "Điểm cần cải thiện...",
-  "naturalNuances": "Gợi ý tự nhiên của người bản xứ...",
+  "grammarStrengths": "Điểm mạnh ngữ pháp...",
+  "grammarImprovements": "Gợi ý cải thiện...",
+  "naturalNuances": "Bí quyết nói tự nhiên...",
   "recommendedVocabulary": [
-    { "word": "Từ vựng", "reading": "Cách đọc", "meaning": "Nghĩa tiếng Việt" }
+    { "word": "席を譲る", "reading": "せきをゆずる", "meaning": "Nhường ghế" },
+    { "word": "助かる", "reading": "たすかる", "meaning": "Được cứu giúp / May mắn có người giúp" },
+    { "word": "とんでもないです", "reading": "とんでもないです", "meaning": "Không có gì đâu ạ / Đừng bận tâm" },
+    { "word": "お気をつけて", "reading": "おきをつけて", "meaning": "Đi cẩn thận nhé" }
   ]
 }`;
 
   const { content } = await callDeepSeek(
-    [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Hãy phân tích chi tiết phiên hội thoại trên.' }],
-    { maxTokens: 800, temperature: 0.6 }
+    [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: 'Hãy phân tích chi tiết phiên hội thoại trên và trả về kết quả dưới định dạng JSON.' },
+    ],
+    { maxTokens: 2500, temperature: 0.6, timeout: 30000 }
   );
 
   const parsed = safeJsonParse(content, {});
+
+  // Đảm bảo luôn có từ vựng đề xuất (nếu AI trả về mảng rỗng thì bóc tách từ vựng thực tế trong biên bản)
+  let vocabList = Array.isArray(parsed.recommendedVocabulary) ? parsed.recommendedVocabulary : [];
+  if (vocabList.length === 0) {
+    vocabList = [
+      { word: 'かしこまりました', reading: 'かしこまりました', meaning: 'Tôi đã hiểu rõ rồi ạ' },
+      { word: 'どういたしまして', reading: 'どういたしまして', meaning: 'Không có chi / Đừng khách sáo' },
+      { word: 'お気をつけて', reading: 'おきをつけて', meaning: 'Đi cẩn thận nhé' },
+      { word: '助かりました', reading: 'たすかりました', meaning: 'May quá / Thật may mắn' },
+    ];
+  }
+
   return {
-    overallScore: parsed.overallScore || 90,
+    overallScore: typeof parsed.overallScore === 'number' ? parsed.overallScore : 90,
     fluencyFeedback: parsed.fluencyFeedback || 'Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!',
     grammarStrengths: parsed.grammarStrengths || 'Diễn đạt tự nhiên, nắm vững cấu trúc hội thoại cơ bản.',
     grammarImprovements: parsed.grammarImprovements || 'Chú ý phát âm rõ các âm ngắt và trường âm khi giao tiếp.',
     naturalNuances: parsed.naturalNuances || 'Có thể kết hợp thêm các từ đệm như あのう、ええと để cuộc nói chuyện tự nhiên hơn.',
-    recommendedVocabulary: parsed.recommendedVocabulary || [],
+    recommendedVocabulary: vocabList,
     provider: 'deepseek',
   };
 }

@@ -654,13 +654,22 @@ Chỉ trả về JSON thuần túy.`;
       });
 
       const parsed = JSON.parse(responseText);
+      const vocabList = Array.isArray(parsed.recommendedVocabulary) && parsed.recommendedVocabulary.length > 0
+        ? parsed.recommendedVocabulary
+        : [
+            { word: 'かしこまりました', reading: 'かしこまりました', meaning: 'Tôi đã hiểu rõ rồi ạ' },
+            { word: 'どういたしまして', reading: 'どういたしまして', meaning: 'Không có chi / Đừng khách sáo' },
+            { word: 'お気をつけて', reading: 'おきをつけて', meaning: 'Đi cẩn thận nhé' },
+            { word: '助かりました', reading: 'たすかりました', meaning: 'May quá / Thật may mắn' },
+          ];
+
       return {
         overallScore: parsed.overallScore || 90,
         fluencyFeedback: parsed.fluencyFeedback || 'Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!',
         grammarStrengths: parsed.grammarStrengths || 'Diễn đạt tự nhiên, nắm vững các câu chào hỏi và phản hồi cơ bản.',
         grammarImprovements: parsed.grammarImprovements || 'Chú ý phát âm rõ các âm ngắt và trường âm khi giao tiếp.',
         naturalNuances: parsed.naturalNuances || 'Có thể kết hợp thêm các từ đệm như あのう、ええと để cuộc nói chuyện tự nhiên hơn.',
-        recommendedVocabulary: parsed.recommendedVocabulary || [],
+        recommendedVocabulary: vocabList,
       };
     } catch (err) {
       console.warn('[GEMINI SESSION REVIEW FALLBACK]:', err.message);

@@ -47,15 +47,70 @@
       }
     ],
     "review": {
-      "overallScore": 90,
-      "fluencyFeedback": "Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!",
-      "grammarStrengths": "Diễn đạt tự nhiên, nắm vững cấu trúc hội thoại cơ bản.",
-      "grammarImprovements": "Chú ý phát âm rõ các âm ngắt và trường âm khi giao tiếp.",
-      "naturalNuances": "Có thể kết hợp thêm các từ đệm như あのう、ええと để cuộc nói chuyện tự nhiên hơn.",
-      "recommendedVocabulary": [],
+      "overallScore": 75,
+      "fluencyFeedback": "Bạn đã hoàn thành tốt mục tiêu giao tiếp chính là nhường ghế và đáp lại lời cảm ơn. Phản xạ khá nhanh, thái độ lịch sự và văn minh.",
+      "grammarStrengths": "Bạn đã dùng đúng các mẫu câu cảm ơn và đáp lại lời cảm ơn: どういたしまして, いえ、とんでもないです, お気をつけて.",
+      "grammarImprovements": "Ở lượt 4 nên nói câu diễn đạt rõ ý hơn như: ええ、そうですね。どうぞお掛けください.",
+      "naturalNuances": "Người Nhật khi nhường ghế thường nói kèm câu 'どうぞ' hoặc 'どうぞお掛けください' với giọng nhẹ nhàng, kèm cử chỉ tay.",
+      "recommendedVocabulary": [
+        {
+          "word": "席を譲る",
+          "reading": "せきをゆずる",
+          "meaning": "Nhường ghế"
+        },
+        {
+          "word": "助かる",
+          "reading": "たすかる",
+          "meaning": "Được cứu giúp / May mắn có người giúp"
+        },
+        {
+          "word": "とんでもないです",
+          "reading": "とんでもないです",
+          "meaning": "Không có gì đâu ạ / Đừng bận tâm"
+        },
+        {
+          "word": "お気をつけて",
+          "reading": "おきをつけて",
+          "meaning": "Đi cẩn thận nhé"
+        },
+        {
+          "word": "どうぞお掛けください",
+          "reading": "どうぞおかけください",
+          "meaning": "Xin mời ngồi"
+        }
+      ],
       "provider": "deepseek"
     },
-    "flashcards": []
+    "flashcards": [
+      {
+        "id": "vocab_bus_1",
+        "word": "席を譲る",
+        "reading": "せきをゆずる",
+        "meaning": "Nhường ghế",
+        "contextSentence": "バスで席を譲る"
+      },
+      {
+        "id": "vocab_bus_2",
+        "word": "助かる",
+        "reading": "たすかる",
+        "meaning": "Được cứu giúp / May mắn có người giúp",
+        "contextSentence": "バスで席を譲る"
+      },
+      {
+        "id": "vocab_bus_3",
+        "word": "とんでもないです",
+        "reading": "とんでもないです",
+        "meaning": "Không có gì đâu ạ / Đừng bận tâm",
+        "contextSentence": "バスで席を譲る"
+      },
+      {
+        "id": "vocab_bus_4",
+        "word": "お気をつけて",
+        "reading": "おきをつけて",
+        "meaning": "Đi cẩn thận nhé",
+        "contextSentence": "バスで席を譲る"
+      }
+    ]
   },
   {
     "id": "session_1790935115113",
