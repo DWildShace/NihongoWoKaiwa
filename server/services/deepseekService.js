@@ -219,9 +219,20 @@ ${conversationLog || 'Không có lượt thoại nào.'}
 NHIỆM VỤ: Hãy tổng duyệt toàn diện buổi luyện nói của người học:
 1. Chấm điểm tổng quan toàn buổi (overallScore từ 0 đến 100 dựa trên mức độ hoàn thành mục tiêu giao tiếp).
 2. Đánh giá độ trôi chảy & phản xạ (fluencyFeedback): nhận xét súc tích bằng tiếng Việt thân thiện, khích lệ.
-3. Phân tích ngữ pháp & từ vựng (grammarStrengths): chỉ ra các điểm người học đã dùng đúng, phù hợp hoàn cảnh.
-4. Các điểm cần cải thiện (grammarImprovements): chỉ ra lỗi ngữ pháp/cách dùng từ (nếu có) và hướng sửa cụ thể.
-5. Sắc thái tự nhiên của người Nhật (naturalNuances): chia sẻ bí quyết để nói chuyện mượt mà, đúng chuẩn văn hóa bản xứ hơn.
+3. Phân tích ngữ pháp & từ vựng (grammarStrengths): chỉ ra các điểm người học đã dùng đúng, phù hợp hoàn cảnh (trích dẫn câu học viên dùng đúng trong ngoặc 「...」).
+4. TRỌNG TÂM CẢI THIỆN & SỬA LỖI (grammarImprovements & detailedImprovements):
+   - Phân tích sâu sắc các điểm học viên dùng từ chưa chuẩn, sai ngữ pháp, hoặc thiếu tự nhiên theo từng lượt thoại cụ thể.
+   - "grammarImprovements": Chuỗi tổng hợp có gạch đầu dòng rõ ràng theo lượt (ví dụ: "• Lượt 4: ... \n• Lượt 6: ...").
+   - "detailedImprovements": Mảng các luận điểm cải thiện chi tiết theo định dạng:
+     [
+       {
+         "turn": 4,
+         "userSaid": "Câu học viên đã nói chưa tự nhiên",
+         "corrections": ["Câu chuẩn 1 của người bản xứ", "Câu chuẩn 2 (nếu có)"],
+         "explanation": "Lý do vì sao câu học viên nói chưa đúng và cách người Nhật diễn đạt tự nhiên hơn trong ngữ cảnh này."
+       }
+     ]
+5. Sắc thái tự nhiên của người Nhật (naturalNuances): chia sẻ bí quyết để nói chuyện mượt mà, đúng chuẩn văn hóa bản xứ hơn (trích dẫn cụm từ trong ngoặc 「...」).
 6. BẮT BUỘC: Đề xuất 4-6 từ vựng hoặc mẫu câu giao tiếp đắt giá nhất (recommendedVocabulary) từ chính buổi học này để người học lưu vào Flashcard ôn tập:
    - "word": Từ vựng hoặc cụm từ Kanji/Kana tiếng Nhật chuẩn (ví dụ: 席を譲る, かしこまりました, お気をつけて).
    - "reading": Cách đọc Hiragana chuẩn xác (ví dụ: せきをゆずる, かしこまりました, おきをつけて).
@@ -232,13 +243,19 @@ NHIỆM VỤ: Hãy tổng duyệt toàn diện buổi luyện nói của ngườ
   "overallScore": 88,
   "fluencyFeedback": "Nhận xét độ trôi chảy...",
   "grammarStrengths": "Điểm mạnh ngữ pháp...",
-  "grammarImprovements": "Gợi ý cải thiện...",
+  "grammarImprovements": "• Lượt 4: ... \n• Lượt 6: ...",
+  "detailedImprovements": [
+    {
+      "turn": 4,
+      "userSaid": "Câu chưa tự nhiên",
+      "corrections": ["Câu chuẩn 1", "Câu chuẩn 2"],
+      "explanation": "Giải thích chi tiết..."
+    }
+  ],
   "naturalNuances": "Bí quyết nói tự nhiên...",
   "recommendedVocabulary": [
     { "word": "席を譲る", "reading": "せきをゆずる", "meaning": "Nhường ghế" },
-    { "word": "助かる", "reading": "たすかる", "meaning": "Được cứu giúp / May mắn có người giúp" },
-    { "word": "とんでもないです", "reading": "とんでもないです", "meaning": "Không có gì đâu ạ / Đừng bận tâm" },
-    { "word": "お気をつけて", "reading": "おきをつけて", "meaning": "Đi cẩn thận nhé" }
+    { "word": "助かる", "reading": "たすかる", "meaning": "Được cứu giúp / May mắn có người giúp" }
   ]
 }`;
 
@@ -268,6 +285,7 @@ NHIỆM VỤ: Hãy tổng duyệt toàn diện buổi luyện nói của ngườ
     fluencyFeedback: parsed.fluencyFeedback || 'Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!',
     grammarStrengths: parsed.grammarStrengths || 'Diễn đạt tự nhiên, nắm vững cấu trúc hội thoại cơ bản.',
     grammarImprovements: parsed.grammarImprovements || 'Chú ý phát âm rõ các âm ngắt và trường âm khi giao tiếp.',
+    detailedImprovements: Array.isArray(parsed.detailedImprovements) ? parsed.detailedImprovements : [],
     naturalNuances: parsed.naturalNuances || 'Có thể kết hợp thêm các từ đệm như あのう、ええと để cuộc nói chuyện tự nhiên hơn.',
     recommendedVocabulary: vocabList,
     provider: 'deepseek',

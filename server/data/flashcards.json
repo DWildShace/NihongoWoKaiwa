@@ -1,5 +1,40 @@
 [
   {
+    "id": "fc_1790949855014",
+    "kanji": "お付けしますか",
+    "word": "お付けしますか",
+    "reading": "おつけしますか",
+    "meaning": "Có cần kèm đũa không ạ?",
+    "contextSentence": "かしこまりました。お箸はお付けしますか。",
+    "createdAt": "2026-10-02T14:04:15.014Z"
+  },
+  {
+    "id": "vocab_1790949599187mo4r",
+    "word": "レシートはご入用ですか",
+    "reading": "レシートはごいりようですか",
+    "meaning": "Bạn có cần hóa đơn không?",
+    "contextSentence": "",
+    "createdAt": "2026-10-02T13:59:59.187Z"
+  },
+  {
+    "id": "fc_1790949536798",
+    "kanji": "お待たせいたしました。お支払いが完了いたしました。レシートはご入用ですか？",
+    "word": "お待たせいたしました。お支払いが完了いたしました。レシートはご入用ですか？",
+    "reading": "おまたせいたしました。おしはらいがかんりょういたしました。れしいとはごにゅうようですか？",
+    "meaning": "Xin lỗi đã để quý khách đợi. Thanh toán đã hoàn tất. Quý khách có cần hóa đơn không ạ?",
+    "contextSentence": "お待たせいたしました。お支払いが完了いたしました。レシートはご入用ですか？",
+    "createdAt": "2026-10-02T13:58:56.798Z"
+  },
+  {
+    "id": "fc_1790949240597",
+    "kanji": "提示",
+    "word": "提示",
+    "reading": "ていじ",
+    "meaning": "xuất trình, đưa ra",
+    "contextSentence": "かしこまりました。では、PayPayの画面をご提示ください。",
+    "createdAt": "2026-10-02T13:54:00.597Z"
+  },
+  {
     "id": "fc_1790929999168",
     "kanji": "ご一緒にいか",
     "word": "ご一緒にいか",

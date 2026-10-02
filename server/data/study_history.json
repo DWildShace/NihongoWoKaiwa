@@ -1,5 +1,170 @@
 [
   {
+    "id": "session_1790949583374",
+    "scenarioId": "sc_1790949583374",
+    "scenario": {
+      "title": "コンビニでの支払い (Thanh toán tại cửa hàng tiện lợi)",
+      "level": "N5",
+      "topic": "daily",
+      "aiRole": "店員 (Nhân viên cửa hàng)",
+      "userRole": "客 (Khách hàng)",
+      "description": "Bạn đang mua hàng tại cửa hàng tiện lợi và chuẩn bị thanh toán. Nhân viên thu ngân sẽ hỏi bạn về phương thức thanh toán và các lựa chọn khác."
+    },
+    "completedAt": "2026-10-02T13:59:43.374Z",
+    "turnsCount": 13,
+    "history": [
+      {
+        "speaker": "ai",
+        "text": "いらっしゃいませ。お会計はこちらでよろしいですか？",
+        "vietnamese": "Chào mừng quý khách. Quý khách thanh toán ở đây được không ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "はい"
+      },
+      {
+        "speaker": "ai",
+        "text": "ありがとうございます。お支払いは現金ですか、カードですか？",
+        "vietnamese": "Cảm ơn quý khách. Quý khách thanh toán bằng tiền mặt hay thẻ ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "ガローにお支払いにします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。PayPayなどはお使いいただけますか？",
+        "vietnamese": "Tôi hiểu rồi. Anh/chị có thể sử dụng PayPay hoặc các ứng dụng khác không?"
+      },
+      {
+        "speaker": "user",
+        "text": "突然ですが今形。お使います。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。では、PayPayの画面をご提示ください。",
+        "vietnamese": "Tôi hiểu rồi. Vậy xin vui lòng cho tôi xem màn hình PayPay của quý khách."
+      },
+      {
+        "speaker": "user",
+        "text": "はい。こちらはどうぞ。"
+      },
+      {
+        "speaker": "ai",
+        "text": "ありがとうございます。確認いたしますので少々お待ちください。",
+        "vietnamese": "Cảm ơn quý khách. Tôi sẽ kiểm tra, xin vui lòng đợi một chút."
+      },
+      {
+        "speaker": "user",
+        "text": "はい。お願いします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "お待たせいたしました。お支払いが完了いたしました。レシートはご入用ですか？",
+        "vietnamese": "Xin lỗi đã để quý khách đợi. Thanh toán đã hoàn tất. Quý khách có cần hóa đơn không ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "はい、ニューヨークです。お願いします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。レシートはこちらになります。お会計、ありがとうございました。またのお越しをお待ちしております。",
+        "vietnamese": "Vâng, tôi hiểu rồi. Đây là hóa đơn của bạn. Cảm ơn bạn đã thanh toán. Rất mong được gặp lại bạn lần sau."
+      }
+    ],
+    "review": {
+      "overallScore": 70,
+      "fluencyFeedback": "Bạn đã hoàn thành được mục tiêu giao tiếp cơ bản: chọn phương thức thanh toán, xác nhận dùng PayPay và nhận hóa đơn. Phản xạ khá nhanh và có phản hồi đúng trọng tâm, nhưng một số câu còn bị ngắt hoặc dùng từ chưa chuẩn nên người nghe có thể phải suy đoán. Cố gắng luyện thêm các mẫu câu thanh toán ngắn, nói thành câu hoàn chỉnh sẽ giúp bạn tự tin và trôi chảy hơn.",
+      "grammarStrengths": "Bạn dùng đúng các mẫu câu then chốt trong tình huống thanh toán: 「はい」 để xác nhận, 「〜にお支払いにします」 để chọn phương thức thanh toán, 「お願いします」 khi nhờ nhân viên, và 「こちらはどうぞ」 khi đưa màn hình. Cách dùng 「はい」 ở các lượt 2, 8, 10, 12 phù hợp với nhịp hội thoại. Ngoài ra, bạn có ý thức dùng 「お支払い」 và 「お願いします」 nên vẫn giữ được sắc thái lịch sự cơ bản.",
+      "grammarImprovements": "Lỗi rõ nhất là ở lượt 4: 「ガローにお支払いにします。」 không phải là cách nói tự nhiên. Nếu muốn nói thanh toán bằng thẻ, nên dùng 「カードでお願いします」 hoặc 「カードで支払います」. Nếu là ví điện tử thì nói 「PayPayでお願いします」. Lượt 6: 「突然ですが今形。お使います。」 gần như không truyền đạt được ý. Cần nói rõ: 「PayPayは使えますか」 hoặc 「PayPayでお願いします」. Lượt 12: 「はい、ニューヨークです。お願いします。」 có từ 「ニューヨーク」 xen vào không liên quan; nên nói đơn giản 「はい、お願いします」. Ngoài ra, khi nhân viên hỏi 「レシートはご入用ですか」, trả lời 「はい、お願いします」 là đủ và tự nhiên hơn.",
+      "naturalNuances": "Trong tình huống cửa hàng tiện lợi, người Nhật thường trả lời ngắn gọn nhưng phải đúng mẫu câu. Khi chọn thanh toán, dùng 「〜でお願いします」 là cách nói lịch sự, tự nhiên nhất. Khi đưa màn hình điện thoại, có thể nói 「はい、どうぞ」 thay vì 「こちらはどうぞ」 vì 「こちら」 nghe hơi trang trọng. Khi nhân viên hỏi có cần hóa đơn không, nếu cần thì nói 「はい、お願いします」, nếu không cần thì nói 「大丈夫です」. Ngoài ra, nên tránh nói những từ không liên quan như 「ニューヨーク」 vì sẽ khiến nhân viên bối rối. Cuối cùng, sau khi thanh toán xong có thể nói 「ごちそうさまでした」 hoặc 「ありがとうございました」 để kết thúc tự nhiên.",
+      "recommendedVocabulary": [
+        {
+          "word": "カードでお願いします",
+          "reading": "カードでおねがいします",
+          "meaning": "Thanh toán bằng thẻ ạ"
+        },
+        {
+          "word": "PayPayでお願いします",
+          "reading": "ペイペイでおねがいします",
+          "meaning": "Thanh toán bằng PayPay ạ"
+        },
+        {
+          "word": "レシートはご入用ですか",
+          "reading": "レシートはごいりようですか",
+          "meaning": "Bạn có cần hóa đơn không?"
+        },
+        {
+          "word": "かしこまりました",
+          "reading": "かしこまりました",
+          "meaning": "Tôi đã hiểu ạ (cách nói lịch sự của nhân viên)"
+        },
+        {
+          "word": "お待たせいたしました",
+          "reading": "おまたせいたしました",
+          "meaning": "Xin lỗi vì đã để quý khách đợi"
+        },
+        {
+          "word": "またのお越しをお待ちしております",
+          "reading": "またのおこしをおまちしております",
+          "meaning": "Rất mong được gặp lại quý khách"
+        }
+      ],
+      "provider": "deepseek"
+    },
+    "flashcards": [
+      {
+        "id": "vocab_1790949583375s3ce",
+        "word": "カードでお願いします",
+        "reading": "カードでおねがいします",
+        "meaning": "Thanh toán bằng thẻ ạ",
+        "contextSentence": "コンビニでの支払い (Thanh toán tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T13:59:43.375Z"
+      },
+      {
+        "id": "vocab_1790949583375ncgk",
+        "word": "PayPayでお願いします",
+        "reading": "ペイペイでおねがいします",
+        "meaning": "Thanh toán bằng PayPay ạ",
+        "contextSentence": "コンビニでの支払い (Thanh toán tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T13:59:43.375Z"
+      },
+      {
+        "id": "vocab_17909495833752hv7",
+        "word": "レシートはご入用ですか",
+        "reading": "レシートはごいりようですか",
+        "meaning": "Bạn có cần hóa đơn không?",
+        "contextSentence": "コンビニでの支払い (Thanh toán tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T13:59:43.375Z"
+      },
+      {
+        "id": "vocab_1790949583375b602",
+        "word": "かしこまりました",
+        "reading": "かしこまりました",
+        "meaning": "Tôi đã hiểu ạ (cách nói lịch sự của nhân viên)",
+        "contextSentence": "コンビニでの支払い (Thanh toán tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T13:59:43.375Z"
+      },
+      {
+        "id": "vocab_1790949583375sqc7",
+        "word": "お待たせいたしました",
+        "reading": "おまたせいたしました",
+        "meaning": "Xin lỗi vì đã để quý khách đợi",
+        "contextSentence": "コンビニでの支払い (Thanh toán tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T13:59:43.375Z"
+      },
+      {
+        "id": "vocab_1790949583375impb",
+        "word": "またのお越しをお待ちしております",
+        "reading": "またのおこしをおまちしております",
+        "meaning": "Rất mong được gặp lại quý khách",
+        "contextSentence": "コンビニでの支払い (Thanh toán tại cửa hàng tiện lợi)",
+        "createdAt": "2026-10-02T13:59:43.375Z"
+      }
+    ]
+  },
+  {
     "id": "session_1790935610190",
     "scenarioId": "sc_1790935610190",
     "scenario": {

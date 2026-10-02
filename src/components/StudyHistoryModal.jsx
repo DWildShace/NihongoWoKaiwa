@@ -21,6 +21,8 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { speakJapanese } from '../utils/soundEffects';
+import ImprovementSection from './ImprovementSection';
+import { HighlightedJapaneseText } from '../utils/evaluationFormatter';
 
 export default function StudyHistoryModal({
   isOpen,
@@ -416,50 +418,43 @@ export default function StudyHistoryModal({
                                   <span>Đánh giá độ trôi chảy & Phản xạ:</span>
                                 </div>
                                 <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
-                                  {currentSession.review.fluencyFeedback}
+                                  <HighlightedJapaneseText text={currentSession.review.fluencyFeedback} theme="sky" />
                                 </p>
                               </div>
                             )}
 
-                            {/* Điểm mạnh & Điểm cần sửa */}
+                            {/* HERO: TRỌNG TÂM CẢI THIỆN & SỬA LỖI */}
+                            <ImprovementSection
+                              grammarImprovements={currentSession.review.grammarImprovements}
+                              detailedImprovements={currentSession.review.detailedImprovements}
+                            />
+
+                            {/* Điểm mạnh & Sắc thái bản xứ */}
                             <div className="grid gap-3.5 sm:grid-cols-2">
                               {currentSession.review.grammarStrengths && (
                                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5">
                                   <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
                                     <CheckCircle className="w-4 h-4" />
-                                    <span>Điểm mạnh ngữ pháp:</span>
+                                    <span>Điểm mạnh ngữ pháp & Từ vựng:</span>
                                   </div>
-                                  <p className="text-xs text-slate-300 leading-relaxed">
-                                    {currentSession.review.grammarStrengths}
+                                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                                    <HighlightedJapaneseText text={currentSession.review.grammarStrengths} theme="emerald" />
                                   </p>
                                 </div>
                               )}
 
-                              {currentSession.review.grammarImprovements && (
-                                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
-                                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
-                                    <Sparkles className="w-4 h-4" />
-                                    <span>Gợi ý hoàn thiện & Sửa lỗi:</span>
+                              {currentSession.review.naturalNuances && (
+                                <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 space-y-1.5">
+                                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-300">
+                                    <BookOpen className="w-4 h-4" />
+                                    <span>Bí quyết nói tự nhiên như người Nhật:</span>
                                   </div>
-                                  <p className="text-xs text-slate-300 leading-relaxed">
-                                    {currentSession.review.grammarImprovements}
+                                  <p className="text-xs sm:text-sm text-indigo-100 leading-relaxed">
+                                    <HighlightedJapaneseText text={currentSession.review.naturalNuances} theme="indigo" />
                                   </p>
                                 </div>
                               )}
                             </div>
-
-                            {/* Sắc thái người bản xứ */}
-                            {currentSession.review.naturalNuances && (
-                              <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 space-y-1.5">
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-300">
-                                  <BookOpen className="w-4 h-4" />
-                                  <span>Bí quyết nói tự nhiên như người Nhật:</span>
-                                </div>
-                                <p className="text-xs sm:text-sm text-indigo-100 leading-relaxed">
-                                  {currentSession.review.naturalNuances}
-                                </p>
-                              </div>
-                            )}
                           </>
                         ) : (
                           <div className="text-center py-10 text-slate-500 text-xs">

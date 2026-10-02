@@ -1,6 +1,8 @@
 import React from 'react';
 import { Award, Volume2, CheckCircle, Sparkles, MessageSquare, ArrowRight, BookOpen, PlusCircle, Check, History } from 'lucide-react';
 import { speakJapanese } from '../utils/soundEffects';
+import ImprovementSection from './ImprovementSection';
+import { HighlightedJapaneseText } from '../utils/evaluationFormatter';
 
 export default function AICoachingCard({
   turnIndex = 1,
@@ -37,10 +39,10 @@ export default function AICoachingCard({
         </div>
         <div className="space-y-1">
           <h3 className="text-base font-bold text-white">
-            Gemini Master Coach đang phân tích toàn bộ buổi hội thoại...
+            Huấn luyện viên AI đang tổng duyệt toàn bộ buổi hội thoại...
           </h3>
           <p className="text-xs text-slate-400">
-            Tổng duyệt ngữ pháp, sắc thái tự nhiên và chọn lọc các từ vựng tiêu biểu cho bạn.
+            Tổng hợp các luận điểm cải thiện, sửa lỗi từng lượt và chắt lọc từ vựng thực chiến cho bạn.
           </p>
         </div>
       </div>
@@ -81,6 +83,7 @@ export default function AICoachingCard({
     fluencyFeedback = '',
     grammarStrengths = '',
     grammarImprovements = '',
+    detailedImprovements = [],
     naturalNuances = '',
     recommendedVocabulary = [],
   } = sessionReview;
@@ -93,27 +96,27 @@ export default function AICoachingCard({
       : 'from-rose-500 to-orange-400 text-rose-300 border-rose-500/40';
 
   return (
-    <div className="bg-slate-900/90 rounded-3xl border border-slate-800 p-5 lg:p-6 shadow-xl space-y-6 animate-fadeIn">
+    <div className="bg-slate-900/90 rounded-3xl border border-slate-800 p-5 lg:p-7 shadow-2xl space-y-6 animate-fadeIn">
       {/* Header: Score & Title */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white shadow-md shadow-amber-500/20">
-            <Award className="w-5 h-5" />
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/25">
+            <Award className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base sm:text-lg font-extrabold text-white">
               Báo Cáo Phân Tích Toàn Diện Buổi Hội Thoại
             </h3>
             <p className="text-xs text-slate-400">
-              Tổng kết năng lực giao tiếp & phản xạ qua các lượt thoại
+              Tổng kết năng lực giao tiếp, phân tích luận điểm cải thiện & phản xạ bản xứ
             </p>
           </div>
         </div>
 
         {/* Điểm tổng quan */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <span className="text-xs text-slate-400 font-medium">Điểm tổng kết:</span>
-          <div className={`px-4 py-1.5 rounded-2xl bg-gradient-to-r ${scoreColor} font-black text-xl shadow-sm border flex items-center gap-1.5`}>
+          <div className={`px-4 py-1.5 rounded-2xl bg-gradient-to-r ${scoreColor} font-black text-xl sm:text-2xl shadow-md border flex items-center gap-1.5`}>
             <span>{overallScore}</span>
             <span className="text-xs font-normal opacity-80">/ 100 🌟</span>
           </div>
@@ -121,53 +124,62 @@ export default function AICoachingCard({
       </div>
 
       {/* 1. Nhận xét độ trôi chảy & phản xạ */}
-      <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/90 space-y-1.5">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-sky-400">
-          <Sparkles className="w-4 h-4" />
-          <span>Đánh giá độ trôi chảy & Phản xạ giao tiếp:</span>
-        </div>
-        <p className="text-xs lg:text-sm text-slate-200 leading-relaxed font-medium">
-          {fluencyFeedback}
-        </p>
-      </div>
-
-      {/* 2. Điểm mạnh ngữ pháp & Điểm cần cải thiện */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {/* Điểm mạnh */}
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-            <CheckCircle className="w-4 h-4" />
-            <span>Điểm mạnh ngữ pháp & Từ vựng:</span>
-          </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
-            {grammarStrengths}
-          </p>
-        </div>
-
-        {/* Điểm cần cải thiện */}
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+      {fluencyFeedback && (
+        <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/90 space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-sky-400">
             <Sparkles className="w-4 h-4" />
-            <span>Gợi ý cải thiện & Sửa lỗi:</span>
+            <span>Đánh giá độ trôi chảy & Phản xạ giao tiếp:</span>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
-            {grammarImprovements}
-          </p>
-        </div>
-      </div>
-
-      {/* 3. Sắc thái tự nhiên của người bản xứ */}
-      {naturalNuances && (
-        <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-300">
-            <BookOpen className="w-4 h-4" />
-            <span>Bí quyết nói tự nhiên như người Nhật bản xứ:</span>
-          </div>
-          <p className="text-xs lg:text-sm text-indigo-100 leading-relaxed">
-            {naturalNuances}
+          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
+            <HighlightedJapaneseText text={fluencyFeedback} theme="sky" />
           </p>
         </div>
       )}
+
+      {/* 2. HERO: TRỌNG TÂM CẢI THIỆN & SỬA LỖI (Actionable Improvement Section) */}
+      <ImprovementSection
+        grammarImprovements={grammarImprovements}
+        detailedImprovements={detailedImprovements}
+      />
+
+      {/* 3. Cột bổ trợ: Điểm mạnh đã phát huy & Bí quyết người bản xứ */}
+      <div className="grid gap-4 sm:grid-cols-2 items-stretch">
+        {/* Điểm mạnh */}
+        {grammarStrengths && (
+          <div className="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                <span>Điểm mạnh ngữ pháp & Từ vựng đã dùng tốt:</span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                <HighlightedJapaneseText text={grammarStrengths} theme="emerald" />
+              </p>
+            </div>
+            <div className="text-[11px] text-emerald-400/80 pt-2 border-t border-emerald-500/20">
+              ✓ Hãy tiếp tục duy trì những phản xạ tích cực này trong các bài tiếp theo!
+            </div>
+          </div>
+        )}
+
+        {/* Bí quyết nói tự nhiên như người Nhật */}
+        {naturalNuances && (
+          <div className="p-4 sm:p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/25 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-300">
+                <BookOpen className="w-4 h-4 shrink-0" />
+                <span>Bí quyết nói tự nhiên như người Nhật bản xứ:</span>
+              </div>
+              <p className="text-xs sm:text-sm text-indigo-100 leading-relaxed">
+                <HighlightedJapaneseText text={naturalNuances} theme="indigo" />
+              </p>
+            </div>
+            <div className="text-[11px] text-indigo-300/80 pt-2 border-t border-indigo-500/20">
+              💡 Chú ý ngữ điệu và các từ đệm cảm thán để giao tiếp thêm gần gũi.
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* 4. Từ vựng & Mẫu câu đắt giá khuyên lưu Flashcard */}
       {recommendedVocabulary && recommendedVocabulary.length > 0 && (

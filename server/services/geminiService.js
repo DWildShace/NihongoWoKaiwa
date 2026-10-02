@@ -630,9 +630,20 @@ ${conversationLog}
 NHIỆM VỤ: Hãy tổng duyệt toàn diện buổi luyện nói của người học:
 1. Chấm điểm tổng quan toàn buổi (overallScore từ 0 đến 100).
 2. Đánh giá độ trôi chảy & phản xạ (fluencyFeedback): nhận xét bằng tiếng Việt thân thiện, khích lệ.
-3. Phân tích ngữ pháp & từ vựng (grammarStrengths): chỉ ra các điểm người học đã dùng đúng và hay.
-4. Các điểm cần cải thiện (grammarImprovements): chỉ ra lỗi ngữ pháp/dùng từ (nếu có) và hướng sửa.
-5. Sắc thái tự nhiên của người Nhật (naturalNuances): người bản xứ trong thực tế sẽ nói thế nào cho mượt mà hơn.
+3. Phân tích ngữ pháp & từ vựng (grammarStrengths): chỉ ra các điểm người học đã dùng đúng và hay (trích dẫn cụm từ trong ngoặc 「...」).
+4. TRỌNG TÂM CẢI THIỆN & SỬA LỖI (grammarImprovements & detailedImprovements):
+   - Phân tích sâu sắc các điểm học viên dùng từ chưa chuẩn, sai ngữ pháp, hoặc thiếu tự nhiên theo từng lượt thoại cụ thể.
+   - "grammarImprovements": Chuỗi tổng hợp có gạch đầu dòng rõ ràng theo lượt (ví dụ: "• Lượt 4: ... \n• Lượt 6: ...").
+   - "detailedImprovements": Mảng các luận điểm cải thiện chi tiết theo định dạng:
+     [
+       {
+         "turn": 4,
+         "userSaid": "Câu học viên đã nói chưa tự nhiên",
+         "corrections": ["Câu chuẩn 1 của người bản xứ", "Câu chuẩn 2 (nếu có)"],
+         "explanation": "Lý do vì sao câu học viên nói chưa đúng và cách người Nhật diễn đạt tự nhiên hơn trong ngữ cảnh này."
+       }
+     ]
+5. Sắc thái tự nhiên của người Nhật (naturalNuances): người bản xứ trong thực tế sẽ nói thế nào cho mượt mà hơn (trích dẫn trong ngoặc 「...」).
 6. 3-4 từ vựng hoặc cấu trúc xuất sắc nhất nên lưu vào Flashcard (recommendedVocabulary: [{ word, reading, meaning }]).
 
 Định dạng JSON:
@@ -640,7 +651,15 @@ NHIỆM VỤ: Hãy tổng duyệt toàn diện buổi luyện nói của ngườ
   "overallScore": 90,
   "fluencyFeedback": "Nhận xét độ trôi chảy...",
   "grammarStrengths": "Điểm mạnh...",
-  "grammarImprovements": "Điểm cần cải thiện...",
+  "grammarImprovements": "• Lượt 4: ... \n• Lượt 6: ...",
+  "detailedImprovements": [
+    {
+      "turn": 4,
+      "userSaid": "Câu chưa tự nhiên",
+      "corrections": ["Câu chuẩn 1", "Câu chuẩn 2"],
+      "explanation": "Giải thích chi tiết..."
+    }
+  ],
   "naturalNuances": "Gợi ý tự nhiên của người bản xứ...",
   "recommendedVocabulary": [
     { "word": "Từ vựng", "reading": "Cách đọc", "meaning": "Nghĩa tiếng Việt" }
@@ -668,6 +687,7 @@ Chỉ trả về JSON thuần túy.`;
         fluencyFeedback: parsed.fluencyFeedback || 'Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!',
         grammarStrengths: parsed.grammarStrengths || 'Diễn đạt tự nhiên, nắm vững các câu chào hỏi và phản hồi cơ bản.',
         grammarImprovements: parsed.grammarImprovements || 'Chú ý phát âm rõ các âm ngắt và trường âm khi giao tiếp.',
+        detailedImprovements: Array.isArray(parsed.detailedImprovements) ? parsed.detailedImprovements : [],
         naturalNuances: parsed.naturalNuances || 'Có thể kết hợp thêm các từ đệm như あのう、ええと để cuộc nói chuyện tự nhiên hơn.',
         recommendedVocabulary: vocabList,
       };
