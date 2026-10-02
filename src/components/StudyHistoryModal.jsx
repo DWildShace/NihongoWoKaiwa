@@ -67,6 +67,13 @@ export default function StudyHistoryModal({
     return filteredSessions[0] || null;
   }, [selectedSessionId, savedSessions, filteredSessions]);
 
+  // Tính điểm trung bình các buổi học
+  const averageScore = useMemo(() => {
+    if (savedSessions.length === 0) return 0;
+    const total = savedSessions.reduce((acc, s) => acc + (s.review?.overallScore || 85), 0);
+    return Math.round(total / savedSessions.length);
+  }, [savedSessions]);
+
   if (!isOpen) return null;
 
   // Xử lý lưu từ vựng vào Flashcard chính
@@ -100,13 +107,6 @@ export default function StudyHistoryModal({
       return '';
     }
   };
-
-  // Tính điểm trung bình các buổi học
-  const averageScore = useMemo(() => {
-    if (savedSessions.length === 0) return 0;
-    const total = savedSessions.reduce((acc, s) => acc + (s.review?.overallScore || 85), 0);
-    return Math.round(total / savedSessions.length);
-  }, [savedSessions]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-fadeIn">
