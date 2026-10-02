@@ -1,5 +1,5 @@
 // src/components/DictationSpeakingCard.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as wanakana from 'wanakana';
 import {
   Dice5,
@@ -82,14 +82,32 @@ export default function DictationSpeakingCard({
   // Ref lưu vị trí con trỏ chuột khi chỉnh sửa ở giữa câu dài
   const cursorPositionRef = useRef(null);
 
-  // Bind Wanakana vào ô nhập liệu để tự chuyển Romaji -> Hiragana chuẩn xác
-  useEffect(() => {
-    if (inputRef.current) {
-      wanakana.bind(inputRef.current, { IMEMode: 'toHiragana' });
+  // Callback ref đảm bảo luôn bind Wanakana ngay lập tức khi textarea mount/remount vào DOM
+  const setInputRef = useCallback((node) => {
+    if (inputRef.current && inputRef.current !== node) {
+      try {
+        wanakana.unbind(inputRef.current);
+      } catch (e) {
+        // ignore
+      }
     }
+    inputRef.current = node;
+    if (node) {
+      try {
+        wanakana.bind(node, { IMEMode: 'toHiragana' });
+      } catch (e) {
+        console.warn('Wanakana bind warning:', e);
+      }
+    }
+  }, []);
+
+  // Cleanup Wanakana khi component unmount
+  useEffect(() => {
     return () => {
       if (inputRef.current) {
-        wanakana.unbind(inputRef.current);
+        try {
+          wanakana.unbind(inputRef.current);
+        } catch (e) {}
       }
     };
   }, []);
@@ -97,25 +115,94 @@ export default function DictationSpeakingCard({
   // Khôi phục chính xác vị trí con trỏ chuột sau khi React re-render
   useEffect(() => {
     if (cursorPositionRef.current !== null && inputRef.current) {
-      const pos = cursorPositionRef.current;
-      inputRef.current.setSelectionRange(pos, pos);
+      const pos = Math.min(cursorPositionRef.current, inputRef.current.value.length);
+      try {
+        inputRef.current.setSelectionRange(pos, pos);
+      } catch (e) {}
       cursorPositionRef.current = null;
     }
   }, [typedInput]);
 
-  // Tính % độ khớp thời gian thực khi người dùng gõ
+  // Tính % độ khớp thời gian thực khi người dùng gõ, tự động chuyển đổi Romaji -> Hiragana
   const handleInputChange = (e) => {
-    // Lưu lại vị trí con trỏ hiện tại trước khi React cập nhật state
-    cursorPositionRef.current = e.target.selectionStart;
+    const rawVal = e.target.value;
+    const start = e.target.selectionStart;
 
-    const val = e.target.value;
-    setTypedInput(val);
+    // Chuyển đổi Romaji -> Hiragana thời gian thực (IMEMode: true giữ nguyên phụ âm dở dang như k, s, t)
+    const converted = wanakana.toKana(rawVal, { IMEMode: true });
+
+    // Tính toán độ lệch vị trí con trỏ nếu có hợp nhất ký tự Romaji -> Hiragana (ví dụ: 'ka' -> 'か')
+    if (converted !== rawVal) {
+      const diff = rawVal.length - converted.length;
+      cursorPositionRef.current = Math.max(0, (start || 0) - diff);
+    } else {
+      cursorPositionRef.current = start;
+    }
+
+    setTypedInput(converted);
 
     const targetHira = currentTurn?.normalizedHiragana || currentTurn?.reading || '';
-    const score = computeRealtimeMatch(val, targetHira);
+    const score = computeRealtimeMatch(converted, targetHira);
     setMatchScore(score);
 
     // Kiểm tra mở khóa 80%
+    if (score >= 80 && !hasUnlocked) {
+      setHasUnlocked(true);
+      playUnlockSuccessSound();
+    }
+  };
+
+  // Hỗ trợ dán (Paste) - Chuyển toàn bộ đoạn văn bản Romaji dán vào thành Hiragana ngay lập tức
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
+    if (!pastedText) return;
+
+    const convertedPaste = wanakana.toKana(pastedText);
+    const textarea = inputRef.current;
+    const start = textarea ? textarea.selectionStart : typedInput.length;
+    const end = textarea ? textarea.selectionEnd : typedInput.length;
+    const current = typedInput;
+    const nextVal = current.substring(0, start) + convertedPaste + current.substring(end);
+
+    cursorPositionRef.current = start + convertedPaste.length;
+    setTypedInput(nextVal);
+
+    const targetHira = currentTurn?.normalizedHiragana || currentTurn?.reading || '';
+    const score = computeRealtimeMatch(nextVal, targetHira);
+    setMatchScore(score);
+
+    if (score >= 80 && !hasUnlocked) {
+      setHasUnlocked(true);
+      playUnlockSuccessSound();
+    }
+  };
+
+  // Tự động chuyển n cuối cùng thành ん khi rời khỏi ô nhập liệu
+  const handleBlur = () => {
+    if (typedInput && /[a-zA-Z]/.test(typedInput)) {
+      const converted = wanakana.toKana(typedInput);
+      if (converted !== typedInput) {
+        setTypedInput(converted);
+        const targetHira = currentTurn?.normalizedHiragana || currentTurn?.reading || '';
+        const score = computeRealtimeMatch(converted, targetHira);
+        setMatchScore(score);
+        if (score >= 80 && !hasUnlocked) {
+          setHasUnlocked(true);
+          playUnlockSuccessSound();
+        }
+      }
+    }
+  };
+
+  // Nút thủ công chuyển đổi toàn bộ Romaji sang Hiragana nếu cần
+  const handleConvertToHiragana = () => {
+    if (!typedInput) return;
+    const converted = wanakana.toKana(typedInput);
+    setTypedInput(converted);
+    const targetHira = currentTurn?.normalizedHiragana || currentTurn?.reading || '';
+    const score = computeRealtimeMatch(converted, targetHira);
+    setMatchScore(score);
     if (score >= 80 && !hasUnlocked) {
       setHasUnlocked(true);
       playUnlockSuccessSound();
@@ -690,10 +777,12 @@ export default function DictationSpeakingCard({
         >
           {/* Ô nhập liệu tự động co giãn theo độ dài câu, không bao giờ bị cắt cụt chữ */}
           <textarea
-            ref={inputRef}
+            ref={setInputRef}
             rows={Math.min(4, Math.max(2, Math.ceil((typedInput.length || 1) / 38)))}
             value={typedInput}
             onChange={handleInputChange}
+            onPaste={handlePaste}
+            onBlur={handleBlur}
             placeholder="Gõ Romaji hoặc Hiragana những gì bạn vừa nghe... (Mục tiêu ≥80%)"
             className="w-full bg-transparent text-base sm:text-lg font-jp text-slate-100 placeholder:text-slate-500 focus:outline-none resize-none leading-relaxed tracking-wide"
           />
@@ -713,6 +802,16 @@ export default function DictationSpeakingCard({
                 >
                   <X className="w-3 h-3" />
                   <span>Xóa làm lại</span>
+                </button>
+              )}
+              {typedInput && /[a-zA-Z]/.test(typedInput) && (
+                <button
+                  type="button"
+                  onClick={handleConvertToHiragana}
+                  className="text-[11px] text-amber-300 hover:text-amber-200 bg-amber-500/20 hover:bg-amber-500/30 px-2 py-0.5 rounded-lg border border-amber-500/40 flex items-center gap-1 transition-all cursor-pointer shadow-sm animate-pulse"
+                  title="Chuyển đổi toàn bộ chữ Romaji trong ô sang Hiragana"
+                >
+                  <span>🈸 Đổi sang Hiragana</span>
                 </button>
               )}
             </div>
