@@ -10,6 +10,14 @@ import {
 import { evaluateUserAudioAndRespond } from '../services/geminiService.js';
 import { annotateSentence, normalizeToHiragana, calculateHiraganaSimilarity } from '../services/kuromojiService.js';
 import { synthesizeJapaneseAudio, JAPANESE_VOICES } from '../services/ttsService.js';
+import {
+  getAllStudySessions,
+  saveStudySession,
+  deleteStudySession,
+  clearAllStudySessions,
+  getAllFlashcards,
+  saveAllFlashcards,
+} from '../services/storageService.js';
 
 const router = express.Router();
 const upload = multer({
@@ -182,6 +190,86 @@ router.post('/tokenize', async (req, res) => {
         normalizedHiragana: normalizedHira,
       },
     });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * [DISK PERSISTENCE: LỊCH SỬ CHỦ ĐỀ ĐÃ HỌC]
+ * GET /api/chat/history - Lấy toàn bộ từ phần cứng
+ */
+router.get('/history', (req, res) => {
+  try {
+    const data = getAllStudySessions();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * POST /api/chat/history - Lưu một phiên học xuống phần cứng
+ */
+router.post('/history', (req, res) => {
+  try {
+    const sessionRecord = req.body;
+    if (!sessionRecord || !sessionRecord.id) {
+      return res.status(400).json({ success: false, message: 'Dữ liệu phiên học không hợp lệ' });
+    }
+    const success = saveStudySession(sessionRecord);
+    res.json({ success });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * DELETE /api/chat/history/:id - Xóa 1 phiên học khỏi phần cứng
+ */
+router.delete('/history/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = deleteStudySession(id);
+    res.json({ success });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * DELETE /api/chat/history - Xóa tất cả phiên học khỏi phần cứng
+ */
+router.delete('/history', (req, res) => {
+  try {
+    const success = clearAllStudySessions();
+    res.json({ success });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * [DISK PERSISTENCE: FLASHCARDS]
+ * GET /api/chat/flashcards - Lấy flashcards từ phần cứng
+ */
+router.get('/flashcards', (req, res) => {
+  try {
+    const data = getAllFlashcards();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * POST /api/chat/flashcards - Lưu toàn bộ flashcards xuống phần cứng
+ */
+router.post('/flashcards', (req, res) => {
+  try {
+    const { flashcards = [] } = req.body;
+    const success = saveAllFlashcards(flashcards);
+    res.json({ success });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

@@ -88,6 +88,56 @@ export default function App() {
       });
   }, []);
 
+  // Đồng bộ hai chiều giữa Cache (localStorage) và Ổ cứng phần cứng (Disk Storage)
+  useEffect(() => {
+    // 1. Đồng bộ Kho Lịch Sử từ Phần Cứng
+    fetch('/api/chat/history')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          if (json.data.length > 0) {
+            setSavedSessions((prev) => {
+              const diskIds = new Set(json.data.map((s) => s.id));
+              const unmergedLocal = prev.filter((s) => !diskIds.has(s.id));
+              return [...json.data, ...unmergedLocal];
+            });
+          } else if (savedSessions.length > 0) {
+            // Nếu ổ cứng trống mà cache trình duyệt có sẵn -> nạp lên ổ cứng
+            savedSessions.forEach((s) => {
+              fetch('/api/chat/history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(s),
+              }).catch(() => {});
+            });
+          }
+        }
+      })
+      .catch((err) => console.warn('[Disk History Sync Warning]:', err.message));
+
+    // 2. Đồng bộ Flashcards từ Phần Cứng
+    fetch('/api/chat/flashcards')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          if (json.data.length > 0) {
+            setFlashcards((prev) => {
+              const diskWords = new Set(json.data.map((f) => f.word || f.kanji));
+              const unmergedLocal = prev.filter((f) => !diskWords.has(f.word || f.kanji));
+              return [...json.data, ...unmergedLocal];
+            });
+          } else if (flashcards.length > 0) {
+            fetch('/api/chat/flashcards', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ flashcards }),
+            }).catch(() => {});
+          }
+        }
+      })
+      .catch((err) => console.warn('[Disk Flashcard Sync Warning]:', err.message));
+  }, []);
+
   // Tự động tải ngữ cảnh ngẫu nhiên ban đầu
   useEffect(() => {
     handleRandomScenario();
@@ -289,6 +339,13 @@ export default function App() {
           const filtered = prev.filter((s) => s.scenario?.title !== scenario?.title);
           return [newSessionRecord, ...filtered];
         });
+
+        // Ghi lưu trữ vĩnh viễn xuống ổ cứng phần cứng (Disk Storage)
+        fetch('/api/chat/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSessionRecord),
+        }).catch((err) => console.warn('[Disk Save Session Error]:', err.message));
       }
     } catch (err) {
       console.error('[Session Review Error]', err);
@@ -300,10 +357,12 @@ export default function App() {
   // Quản lý Kho Chủ Đề Đã Học (Ôn tập lại)
   const handleDeleteSession = (id) => {
     setSavedSessions((prev) => prev.filter((s) => s.id !== id));
+    fetch(`/api/chat/history/${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const handleClearAllSessions = () => {
     setSavedSessions([]);
+    fetch('/api/chat/history', { method: 'DELETE' }).catch(() => {});
   };
 
   const handleReplayScenario = (sessionRecord) => {
@@ -340,14 +399,30 @@ export default function App() {
     }, 400);
   };
 
-  // Lưu Flashcard mới
+  // Lưu Flashcard mới (Đồng bộ cả Cache LocalStorage lẫn Phần Cứng)
   const handleSaveFlashcard = (card) => {
-    setFlashcards((prev) => [card, ...prev]);
+    setFlashcards((prev) => {
+      const updated = [card, ...prev];
+      fetch('/api/chat/flashcards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flashcards: updated }),
+      }).catch(() => {});
+      return updated;
+    });
   };
 
-  // Xóa Flashcard
+  // Xóa Flashcard (Đồng bộ cả Cache LocalStorage lẫn Phần Cứng)
   const handleDeleteFlashcard = (id) => {
-    setFlashcards((prev) => prev.filter((c) => c.id !== id));
+    setFlashcards((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      fetch('/api/chat/flashcards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flashcards: updated }),
+      }).catch(() => {});
+      return updated;
+    });
   };
 
   return (
