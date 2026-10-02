@@ -1,1 +1,154 @@
-[]
+[
+  {
+    "id": "session_1790935610190",
+    "scenarioId": "sc_1790935610190",
+    "scenario": {
+      "title": "バスで席を譲る (Nhường ghế trên xe buýt)",
+      "level": "N5",
+      "topic": "daily",
+      "aiRole": "お年寄り (Người lớn tuổi)",
+      "userRole": "乗客 (Hành khách)",
+      "description": "Bạn đang đi xe buýt và thấy một người lớn tuổi đứng gần đó. Bạn muốn nhường ghế của mình."
+    },
+    "completedAt": "2026-10-02T10:06:50.190Z",
+    "turnsCount": 7,
+    "history": [
+      {
+        "speaker": "ai",
+        "text": "あ、どうもありがとう。",
+        "vietnamese": "À, cảm ơn bạn nhiều."
+      },
+      {
+        "speaker": "user",
+        "text": "どういたしまして。"
+      },
+      {
+        "speaker": "ai",
+        "text": "いやあ、助かりました。最近は席を譲ってくれる人が少なくてねえ。",
+        "vietnamese": "Ôi, may quá. Dạo này ít người nhường ghế quá."
+      },
+      {
+        "speaker": "user",
+        "text": "えっと確か。皆さんが。見えないですが。"
+      },
+      {
+        "speaker": "ai",
+        "text": "そうですか。でも、あなたのように親切な方もいらっしゃるんですよ。本当にありがとう。",
+        "vietnamese": "Vậy à. Nhưng mà cũng có những người tốt bụng như cháu đấy. Cảm ơn cháu thật nhiều."
+      },
+      {
+        "speaker": "user",
+        "text": "いえ、とんでもないです。お気をつけて。"
+      },
+      {
+        "speaker": "ai",
+        "text": "はい、ありがとう。あなたもお気をつけてね。",
+        "vietnamese": "Vâng, cảm ơn bạn. Bạn cũng đi cẩn thận nhé."
+      }
+    ],
+    "review": {
+      "overallScore": 90,
+      "fluencyFeedback": "Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!",
+      "grammarStrengths": "Diễn đạt tự nhiên, nắm vững cấu trúc hội thoại cơ bản.",
+      "grammarImprovements": "Chú ý phát âm rõ các âm ngắt và trường âm khi giao tiếp.",
+      "naturalNuances": "Có thể kết hợp thêm các từ đệm như あのう、ええと để cuộc nói chuyện tự nhiên hơn.",
+      "recommendedVocabulary": [],
+      "provider": "deepseek"
+    },
+    "flashcards": []
+  },
+  {
+    "id": "session_1790935115113",
+    "scenarioId": "sc_1790935115113",
+    "scenario": {
+      "title": "カフェでの注文 (Gọi món tại quán cà phê)",
+      "level": "N5",
+      "topic": "daily",
+      "aiRole": "店員 (Nhân viên phục vụ)",
+      "userRole": "客 (Khách hàng)",
+      "description": "Bạn bước vào một quán cà phê nhỏ. Nhân viên chào hỏi và chờ bạn gọi món."
+    },
+    "completedAt": "2026-10-02T09:58:35.113Z",
+    "turnsCount": 15,
+    "history": [
+      {
+        "speaker": "ai",
+        "text": "いらっしゃいませ。ご注文はお決まりですか？",
+        "vietnamese": "Chào mừng quý khách. Quý khách đã chọn được món chưa ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "コーヒーを一つ、ケーキを一つお願いします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。コーヒーとケーキですね。サイズはどうなさいますか？",
+        "vietnamese": "Vâng, tôi đã hiểu. Cà phê và bánh ngọt phải không ạ. Quý khách muốn chọn kích cỡ như thế nào ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "どんなサイズがありますか？"
+      },
+      {
+        "speaker": "ai",
+        "text": "コーヒーはS・M・Lサイズがございます。ケーキは通常サイズのみとなります。どちらになさいますか？",
+        "vietnamese": "Cà phê có size S, M, L ạ. Còn bánh thì chỉ có size thường thôi. Quý khách muốn chọn loại nào ạ?"
+      },
+      {
+        "speaker": "user",
+        "text": "Sサイズ、コーヒーと。普通、ケーキにします。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。Sサイズのコーヒーと通常サイズのケーキでございますね。少々お待ちください。",
+        "vietnamese": "Vâng, tôi đã hiểu. Cà phê size S và bánh ngọt size thường phải không ạ. Xin vui lòng đợi một chút."
+      },
+      {
+        "speaker": "user",
+        "text": "はい。わかりました。"
+      },
+      {
+        "speaker": "ai",
+        "text": "ありがとうございます。ただいまお持ちいたしますので、こちらでお待ちください。",
+        "vietnamese": "Cảm ơn quý khách. Tôi sẽ mang ra ngay, xin quý khách vui lòng đợi ở đây."
+      },
+      {
+        "speaker": "user",
+        "text": "はい、まちま。"
+      },
+      {
+        "speaker": "ai",
+        "text": "かしこまりました。少々お待ちくださいませ。",
+        "vietnamese": "Vâng, tôi hiểu rồi. Xin quý khách vui lòng đợi một lát."
+      },
+      {
+        "speaker": "user",
+        "text": "はい。わかりました。"
+      },
+      {
+        "speaker": "ai",
+        "text": "お待たせいたしました。Sサイズのコーヒーとケーキでございます。どうぞ。",
+        "vietnamese": "Xin lỗi vì đã để quý khách đợi. Đây là cà phê size S và bánh ngọt của quý khách. Xin mời dùng."
+      },
+      {
+        "speaker": "user",
+        "text": "ありがとうございます。"
+      },
+      {
+        "speaker": "ai",
+        "text": "こちらこそ、ありがとうございます。ごゆっくりどうぞ。",
+        "vietnamese": "Cảm ơn quý khách. Xin mời quý khách thưởng thức."
+      }
+    ],
+    "review": {
+      "overallScore": 90,
+      "fluencyFeedback": "Bạn đã hoàn thành rất tốt buổi hội thoại phản xạ!",
+      "grammarStrengths": "Diễn đạt tự nhiên, nắm vững cấu trúc hội thoại cơ bản.",
+      "grammarImprovements": "Chú ý phát âm rõ các âm ngắt và trường âm khi giao tiếp.",
+      "naturalNuances": "Có thể kết hợp thêm các từ đệm như あのう、ええと để cuộc nói chuyện tự nhiên hơn.",
+      "recommendedVocabulary": [],
+      "provider": "deepseek"
+    },
+    "flashcards": []
+  }
+]

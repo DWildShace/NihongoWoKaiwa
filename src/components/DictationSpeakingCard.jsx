@@ -82,36 +82,6 @@ export default function DictationSpeakingCard({
   // Ref lưu vị trí con trỏ chuột khi chỉnh sửa ở giữa câu dài
   const cursorPositionRef = useRef(null);
 
-  // Callback ref đảm bảo luôn bind Wanakana ngay lập tức khi textarea mount/remount vào DOM
-  const setInputRef = useCallback((node) => {
-    if (inputRef.current && inputRef.current !== node) {
-      try {
-        wanakana.unbind(inputRef.current);
-      } catch (e) {
-        // ignore
-      }
-    }
-    inputRef.current = node;
-    if (node) {
-      try {
-        wanakana.bind(node, { IMEMode: 'toHiragana' });
-      } catch (e) {
-        console.warn('Wanakana bind warning:', e);
-      }
-    }
-  }, []);
-
-  // Cleanup Wanakana khi component unmount
-  useEffect(() => {
-    return () => {
-      if (inputRef.current) {
-        try {
-          wanakana.unbind(inputRef.current);
-        } catch (e) {}
-      }
-    };
-  }, []);
-
   // Khôi phục chính xác vị trí con trỏ chuột sau khi React re-render
   useEffect(() => {
     if (cursorPositionRef.current !== null && inputRef.current) {
@@ -181,7 +151,7 @@ export default function DictationSpeakingCard({
   // Tự động chuyển n cuối cùng thành ん khi rời khỏi ô nhập liệu
   const handleBlur = () => {
     if (typedInput && /[a-zA-Z]/.test(typedInput)) {
-      const converted = wanakana.toKana(typedInput);
+      const converted = wanakana.toHiragana(typedInput);
       if (converted !== typedInput) {
         setTypedInput(converted);
         const targetHira = currentTurn?.normalizedHiragana || currentTurn?.reading || '';
@@ -198,7 +168,7 @@ export default function DictationSpeakingCard({
   // Nút thủ công chuyển đổi toàn bộ Romaji sang Hiragana nếu cần
   const handleConvertToHiragana = () => {
     if (!typedInput) return;
-    const converted = wanakana.toKana(typedInput);
+    const converted = wanakana.toHiragana(typedInput);
     setTypedInput(converted);
     const targetHira = currentTurn?.normalizedHiragana || currentTurn?.reading || '';
     const score = computeRealtimeMatch(converted, targetHira);
@@ -777,7 +747,7 @@ export default function DictationSpeakingCard({
         >
           {/* Ô nhập liệu tự động co giãn theo độ dài câu, không bao giờ bị cắt cụt chữ */}
           <textarea
-            ref={setInputRef}
+            ref={inputRef}
             rows={Math.min(4, Math.max(2, Math.ceil((typedInput.length || 1) / 38)))}
             value={typedInput}
             onChange={handleInputChange}
@@ -804,7 +774,7 @@ export default function DictationSpeakingCard({
                   <span>Xóa làm lại</span>
                 </button>
               )}
-              {typedInput && /[a-zA-Z]/.test(typedInput) && (
+              {typedInput && (wanakana.toHiragana(typedInput) !== typedInput) && (
                 <button
                   type="button"
                   onClick={handleConvertToHiragana}
