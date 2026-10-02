@@ -1,6 +1,5 @@
-// src/components/AICoachingCard.jsx
 import React from 'react';
-import { Award, Volume2, CheckCircle, Sparkles, MessageSquare, ArrowRight, BookOpen, PlusCircle, Check } from 'lucide-react';
+import { Award, Volume2, CheckCircle, Sparkles, MessageSquare, ArrowRight, BookOpen, PlusCircle, Check, History } from 'lucide-react';
 import { speakJapanese } from '../utils/soundEffects';
 
 export default function AICoachingCard({
@@ -11,6 +10,7 @@ export default function AICoachingCard({
   onFinishSession,
   onNewScenario,
   onSaveFlashcard,
+  onOpenHistoryModal,
 }) {
   const [savedWords, setSavedWords] = React.useState({});
 
@@ -221,9 +221,22 @@ export default function AICoachingCard({
         </div>
       )}
 
-      {/* 5. Nút Bắt đầu Ngữ cảnh Mới */}
-      {onNewScenario && (
-        <div className="pt-2 flex justify-end">
+      {/* 5. Nút Bắt đầu Ngữ cảnh Mới & Thông báo Lưu trữ */}
+      <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2 rounded-2xl shadow-sm">
+          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>Đã tự động lưu vào <strong>Kho chủ đề đã học</strong></span>
+          {onOpenHistoryModal && (
+            <button
+              onClick={onOpenHistoryModal}
+              className="ml-1.5 underline font-bold hover:text-emerald-300 transition-colors cursor-pointer"
+            >
+              Mở xem lại & ôn tập →
+            </button>
+          )}
+        </div>
+
+        {onNewScenario && (
           <button
             onClick={onNewScenario}
             className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white text-sm font-bold shadow-lg shadow-rose-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
@@ -231,8 +244,8 @@ export default function AICoachingCard({
             <span>🎲 Bắt đầu một tình huống mới</span>
             <ArrowRight className="w-4 h-4" />
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

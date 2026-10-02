@@ -6,6 +6,7 @@ import AICoachingCard from './components/AICoachingCard';
 import TimelineSidePanel from './components/TimelineSidePanel';
 import QuickFlashcardBar from './components/QuickFlashcardBar';
 import FlashcardModal from './components/FlashcardModal';
+import StudyHistoryModal from './components/StudyHistoryModal';
 import { speakJapanese } from './utils/soundEffects';
 
 export default function App() {
@@ -20,8 +21,28 @@ export default function App() {
   const [sessionReview, setSessionReview] = useState(null);
   const [isReviewingSession, setIsReviewingSession] = useState(false);
 
+  // Kho Chủ Đề Đã Học & Trung Tâm Ôn Tập (Study Archive)
+  const [savedSessions, setSavedSessions] = useState(() => {
+    try {
+      const saved = localStorage.getItem('nihonspeak_study_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+
+  // Lưu Kho Chủ Đề vào LocalStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('nihonspeak_study_history', JSON.stringify(savedSessions));
+    } catch (e) {
+      console.error('[LocalStorage Study History Error]', e);
+    }
+  }, [savedSessions]);
+
   // Status & Loading States
-  const [apiStatus, setApiStatus] = useState({ ok: true, geminiConfigured: false });
+  const [apiStatus, setApiStatus] = useState({ ok: true, geminiConfigured: false, preferredProvider: 'deepseek' });
   const [isLoadingScenario, setIsLoadingScenario] = useState(false);
   const [isEvaluatingSpeaking, setIsEvaluatingSpeaking] = useState(false);
 
@@ -55,11 +76,15 @@ export default function App() {
     fetch('/api/health')
       .then((res) => res.json())
       .then((data) => {
-        setApiStatus({ ok: true, geminiConfigured: data.geminiConfigured });
+        setApiStatus({
+          ok: true,
+          geminiConfigured: data.geminiConfigured,
+          preferredProvider: data.preferredProvider || 'deepseek',
+        });
       })
       .catch((err) => {
         console.warn('[Health Check Failed]', err);
-        setApiStatus({ ok: false, geminiConfigured: false });
+        setApiStatus({ ok: false, geminiConfigured: false, preferredProvider: 'deepseek' });
       });
   }, []);
 
@@ -240,12 +265,79 @@ export default function App() {
 
       if (json.success && json.data) {
         setSessionReview(json.data);
+
+        // Tự động lưu / cập nhật phiên học vào Kho Lưu Trữ Chủ Đề Đã Học
+        const newSessionRecord = {
+          id: 'session_' + Date.now(),
+          scenarioId: scenario?.scenarioId || ('sc_' + Date.now()),
+          scenario: { ...scenario },
+          completedAt: new Date().toISOString(),
+          turnsCount: historyToReview.length,
+          history: [...historyToReview],
+          review: { ...json.data },
+          flashcards: (json.data.recommendedVocabulary || []).map((v) => ({
+            id: 'vocab_' + Date.now() + Math.random().toString(36).slice(2, 6),
+            word: v.word,
+            reading: v.reading || '',
+            meaning: v.meaning || '',
+            contextSentence: scenario?.title || '',
+            createdAt: new Date().toISOString(),
+          })),
+        };
+
+        setSavedSessions((prev) => {
+          const filtered = prev.filter((s) => s.scenario?.title !== scenario?.title);
+          return [newSessionRecord, ...filtered];
+        });
       }
     } catch (err) {
       console.error('[Session Review Error]', err);
     } finally {
       setIsReviewingSession(false);
     }
+  };
+
+  // Quản lý Kho Chủ Đề Đã Học (Ôn tập lại)
+  const handleDeleteSession = (id) => {
+    setSavedSessions((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleClearAllSessions = () => {
+    setSavedSessions([]);
+  };
+
+  const handleReplayScenario = (sessionRecord) => {
+    if (!sessionRecord || !sessionRecord.scenario) return;
+    const sc = sessionRecord.scenario;
+    setScenario(sc);
+    setTurnIndex(1);
+    setSessionReview(null);
+    setIsReviewingSession(false);
+
+    const firstAiTurn = sessionRecord.history?.find((h) => h.speaker === 'ai') || {
+      text: 'いらっしゃいませ。',
+      vietnamese: 'Kính chào quý khách.',
+    };
+
+    const firstTurnObj = {
+      aiSentence: firstAiTurn.text,
+      vietnamese: firstAiTurn.vietnamese || '',
+      replyIdeas: [{ jp: 'はい、お願いします。', vi: 'Vâng, làm phiền bạn ạ.' }],
+      isCompleted: false,
+    };
+
+    setCurrentTurn(firstTurnObj);
+    setHistory([
+      {
+        speaker: 'ai',
+        text: firstAiTurn.text,
+        vietnamese: firstAiTurn.vietnamese,
+      },
+    ]);
+
+    setTimeout(() => {
+      speakJapanese(firstAiTurn.text, 1.0);
+    }, 400);
   };
 
   // Lưu Flashcard mới
@@ -265,6 +357,8 @@ export default function App() {
         apiStatus={apiStatus}
         flashcardCount={flashcards.length}
         onOpenFlashcardModal={() => setIsFlashcardModalOpen(true)}
+        savedSessionsCount={savedSessions.length}
+        onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
       />
 
       {/* 2. Main Workspace Layout: Tỷ Lệ 75% - 25% */}
@@ -304,6 +398,7 @@ export default function App() {
             onFinishSession={() => handleFinishSession(history)}
             onNewScenario={handleRandomScenario}
             onSaveFlashcard={handleSaveFlashcard}
+            onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
           />
         </section>
 
@@ -330,6 +425,18 @@ export default function App() {
         onClose={() => setIsFlashcardModalOpen(false)}
         flashcards={flashcards}
         onDeleteCard={handleDeleteFlashcard}
+      />
+
+      {/* 5. Kho Lưu Trữ Chủ Đề Đã Học & Ôn Tập Modal */}
+      <StudyHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        savedSessions={savedSessions}
+        onDeleteSession={handleDeleteSession}
+        onClearAllSessions={handleClearAllSessions}
+        onReplayScenario={handleReplayScenario}
+        onSaveFlashcard={handleSaveFlashcard}
+        savedFlashcards={flashcards}
       />
     </div>
   );
