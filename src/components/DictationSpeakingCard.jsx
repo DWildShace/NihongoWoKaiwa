@@ -79,10 +79,13 @@ export default function DictationSpeakingCard({
     }
   }, [currentTurn?.aiSentence]);
 
-  // Bind Wanakana vào ô input để tự gõ Romaji -> Hiragana
+  // Ref lưu vị trí con trỏ chuột khi chỉnh sửa ở giữa câu dài
+  const cursorPositionRef = useRef(null);
+
+  // Bind Wanakana vào ô nhập liệu để tự chuyển Romaji -> Hiragana chuẩn xác
   useEffect(() => {
     if (inputRef.current) {
-      wanakana.bind(inputRef.current);
+      wanakana.bind(inputRef.current, { IMEMode: 'toHiragana' });
     }
     return () => {
       if (inputRef.current) {
@@ -91,8 +94,20 @@ export default function DictationSpeakingCard({
     };
   }, []);
 
+  // Khôi phục chính xác vị trí con trỏ chuột sau khi React re-render
+  useEffect(() => {
+    if (cursorPositionRef.current !== null && inputRef.current) {
+      const pos = cursorPositionRef.current;
+      inputRef.current.setSelectionRange(pos, pos);
+      cursorPositionRef.current = null;
+    }
+  }, [typedInput]);
+
   // Tính % độ khớp thời gian thực khi người dùng gõ
   const handleInputChange = (e) => {
+    // Lưu lại vị trí con trỏ hiện tại trước khi React cập nhật state
+    cursorPositionRef.current = e.target.selectionStart;
+
     const val = e.target.value;
     setTypedInput(val);
 
@@ -104,6 +119,15 @@ export default function DictationSpeakingCard({
     if (score >= 80 && !hasUnlocked) {
       setHasUnlocked(true);
       playUnlockSuccessSound();
+    }
+  };
+
+  // Nút xóa nhanh nội dung để gõ lại từ đầu
+  const handleClearInput = () => {
+    setTypedInput('');
+    setMatchScore(0);
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
@@ -656,39 +680,62 @@ export default function DictationSpeakingCard({
           onSpeedChange={(r) => setSpeed(r)}
         />
 
-        {/* Ô gõ Dictation */}
-        <div className="relative">
-          <input
+        {/* VÙNG GÕ DICTATION THÔNG MINH - HỖ TRỢ CÂU DÀI & KHÔNG CHE CHỮ */}
+        <div
+          className={`p-3.5 sm:p-4 rounded-2xl bg-slate-950/85 border transition-all ${
+            matchScore >= 80
+              ? 'border-emerald-500/80 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/20'
+              : 'border-slate-700/80 focus-within:border-amber-500/70 focus-within:ring-1 focus-within:ring-amber-500/20'
+          }`}
+        >
+          {/* Ô nhập liệu tự động co giãn theo độ dài câu, không bao giờ bị cắt cụt chữ */}
+          <textarea
             ref={inputRef}
-            type="text"
+            rows={Math.min(4, Math.max(2, Math.ceil((typedInput.length || 1) / 38)))}
             value={typedInput}
             onChange={handleInputChange}
             placeholder="Gõ Romaji hoặc Hiragana những gì bạn vừa nghe... (Mục tiêu ≥80%)"
-            className={`w-full px-4 py-3.5 pr-28 rounded-2xl bg-slate-950/80 border text-base font-jp text-slate-100 placeholder:text-slate-500 focus:outline-none transition-all ${
-              matchScore >= 80
-                ? 'border-emerald-500/80 shadow-md shadow-emerald-500/10'
-                : 'border-slate-700/80 focus:border-rose-500/70'
-            }`}
+            className="w-full bg-transparent text-base sm:text-lg font-jp text-slate-100 placeholder:text-slate-500 focus:outline-none resize-none leading-relaxed tracking-wide"
           />
 
-          {/* Trạng thái xác nhận hoặc nút gợi ý */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-            {matchScore >= 80 ? (
-              <span className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/15 px-2.5 py-1 rounded-xl border border-emerald-500/30">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Đạt chuẩn
+          {/* Thanh công cụ chân ô gõ (Độc lập, không bao giờ đè lên chữ) */}
+          <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-slate-800/80 text-xs">
+            <div className="flex items-center gap-3 text-slate-400">
+              <span className="font-mono text-[11px] text-slate-500">
+                {typedInput.length} ký tự
               </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowHint(!showHint)}
-                className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-lg border border-amber-500/30 transition-colors cursor-pointer"
-                title="Gợi ý âm đọc nếu bí (Ctrl + H)"
-              >
-                <Lightbulb className="w-3.5 h-3.5" />
-                <span>Gợi ý</span>
-                <kbd className="hidden sm:inline-block ml-1 px-1 py-0.2 text-[9px] font-sans font-bold rounded bg-black/40 text-amber-300/80">Ctrl+H</kbd>
-              </button>
-            )}
+              {typedInput && (
+                <button
+                  type="button"
+                  onClick={handleClearInput}
+                  className="text-[11px] text-slate-400 hover:text-rose-400 flex items-center gap-1 transition-colors cursor-pointer"
+                  title="Xóa nhanh để gõ lại từ đầu"
+                >
+                  <X className="w-3 h-3" />
+                  <span>Xóa làm lại</span>
+                </button>
+              )}
+            </div>
+
+            {/* Trạng thái Đạt chuẩn hoặc Nút Gợi ý */}
+            <div className="flex items-center gap-2">
+              {matchScore >= 80 ? (
+                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-xl border border-emerald-500/30 shadow-sm animate-fadeIn">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Đạt chuẩn (Mở khóa Mic)
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowHint(!showHint)}
+                  className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1 rounded-xl border border-amber-500/30 transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95"
+                  title="Gợi ý âm đọc nếu bí (Ctrl + H)"
+                >
+                  <Lightbulb className="w-3.5 h-3.5" />
+                  <span>Gợi ý âm đọc</span>
+                  <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.2 text-[9px] font-sans font-bold rounded bg-black/40 text-amber-300/80">Ctrl+H</kbd>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

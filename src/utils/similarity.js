@@ -6,10 +6,27 @@ import * as wanakana from 'wanakana';
  */
 export function cleanToHiragana(text = '') {
   if (!text) return '';
-  // Chuyển Katakana/Romaji về Hiragana
-  const hira = wanakana.toHiragana(text);
-  // Loại bỏ khoảng trắng và mọi dấu câu tiếng Nhật + Latin
-  return hira.replace(/[\s。、・「」『』（）()[\]{}"'.,!?！？〜～…\u3000\-_/]/g, '').toLowerCase();
+  // 1. Chuyển Katakana/Romaji về Hiragana
+  let hira = wanakana.toHiragana(text);
+
+  // 2. Chuẩn hóa trường âm ー (Chōonpu) theo nguyên âm đứng trước để tương thích hoàn toàn
+  // giữa cách gõ Hiragana có dấu gạch ngang (けーき) và phiên âm Kuromoji (けえき, ちいず, ろうる)
+  hira = hira
+    .replace(/([あかさたなはまやらわがざだばぱぁゃ])ー/g, '$1あ')
+    .replace(/([いきしちにひみりぎじぢびぴぃ])ー/g, '$1い')
+    .replace(/([うくすつぬふむゆるぐずづぶぷぅゅ])ー/g, '$1う')
+    .replace(/([えけせてねへめれげぜでべぺぇ])ー/g, '$1え')
+    .replace(/([おこそとのほもよろをごぞどぼぽぉょ])ー/g, '$1う')
+    .replace(/ー/g, '');
+
+  // 3. Loại bỏ khoảng trắng và mọi dấu câu tiếng Nhật + Latin
+  let clean = hira.replace(/[\s。、・「」『』（）()[\]{}"'.,!?！？〜～…\u3000\-_/]/g, '').toLowerCase();
+
+  // 4. Nếu có ký tự phụ âm Latinh đơn lẻ nằm kẹt (như chữ 'g' gõ dang dở trong 'けーきgございます'),
+  // loại bỏ để không phạt điểm oan người học
+  clean = clean.replace(/[b-df-hj-np-tv-z]/g, '');
+
+  return clean;
 }
 
 /**
