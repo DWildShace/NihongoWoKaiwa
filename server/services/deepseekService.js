@@ -294,3 +294,29 @@ Hãy tạo MỘT tình huống giao tiếp đời sống ngẫu nhiên:
     modelUsed: 'deepseek-chat',
   };
 }
+
+/**
+ * Dịch nhanh từ vựng hoặc câu tiếng Nhật sang tiếng Việt bằng DeepSeek-V3
+ */
+export async function translateJapaneseWithDeepSeek({ text, context = '' }) {
+  const prompt = `Bạn là từ điển Nhật - Việt chuyên nghiệp. Hãy dịch từ vựng hoặc câu tiếng Nhật sau sang nghĩa tiếng Việt tự nhiên, súc tích (chỉ trả về nghĩa ngắn gọn, không giải thích dài dòng).
+Tiếng Nhật: "${text}"
+${context ? `Ngữ cảnh: "${context}"` : ''}
+
+Định dạng JSON yêu cầu duy nhất:
+{
+  "meaning": "nghĩa tiếng Việt ngắn gọn"
+}`;
+
+  try {
+    const { content } = await callDeepSeek(
+      [{ role: 'user', content: prompt }],
+      { maxTokens: 150, temperature: 0.2 }
+    );
+    const data = safeJsonParse(content, {});
+    return data.meaning || '';
+  } catch (err) {
+    console.warn('[DeepSeek Translate Warning]:', err.message);
+    return '';
+  }
+}

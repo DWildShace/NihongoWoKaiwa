@@ -681,3 +681,31 @@ Chỉ trả về JSON thuần túy.`;
   };
 }
 
+/**
+ * Dịch nhanh từ vựng hoặc câu tiếng Nhật sang tiếng Việt bằng Gemini
+ */
+export async function translateJapaneseWithGemini({ text, context = '' }) {
+  if (!genAI) return '';
+
+  const promptText = `Bạn là từ điển Nhật-Việt chuẩn xác. Hãy dịch từ vựng hoặc câu tiếng Nhật sau sang tiếng Việt tự nhiên, súc tích (1 câu hoặc cụm từ ngắn gọn, không giải thích dài dòng).
+Từ/câu tiếng Nhật: "${text}"
+${context ? `Ngữ cảnh: "${context}"` : ''}
+
+Định dạng JSON yêu cầu duy nhất:
+{
+  "meaning": "nghĩa tiếng Việt ngắn gọn"
+}`;
+
+  try {
+    const { text: responseText } = await callGeminiWithFallback([promptText], {
+      responseMimeType: 'application/json',
+      temperature: 0.2,
+    });
+    const parsed = JSON.parse(responseText);
+    return parsed.meaning || '';
+  } catch (err) {
+    console.warn('[GEMINI TRANSLATE FALLBACK]:', err.message);
+    return '';
+  }
+}
+

@@ -145,23 +145,59 @@ export default function App() {
 
   // Bắt sự kiện bôi đen văn bản để hiện QuickFlashcardBar
   useEffect(() => {
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
+      // Bỏ qua nếu click bên trong QuickFlashcardBar hoặc Flashcard Modal
+      if (e.target.closest && (e.target.closest('.quick-flashcard-card') || e.target.closest('.modal-container'))) {
+        return;
+      }
+
       const sel = window.getSelection();
       const text = sel ? sel.toString().trim() : '';
 
       // Kiểm tra có chứa chữ tiếng Nhật (Hiragana, Katakana, Kanji)
       const hasJapanese = /[\u3040-\u30ff\u4e00-\u9faf]/.test(text);
-      if (text && hasJapanese && text.length <= 40) {
+      if (text && hasJapanese && text.length <= 60) {
+        let matchedContext = '';
+        let matchedMeaning = '';
+
+        const currentAi = currentTurn?.aiSentence || '';
+        const currentVi = currentTurn?.vietnamese || '';
+
+        if (currentAi && currentAi.includes(text)) {
+          matchedContext = currentAi;
+          // Nếu bôi đen toàn bộ câu hoặc gần như trọn câu -> gợi ý trọn nghĩa tiếng Việt
+          if (
+            currentAi.trim() === text ||
+            currentAi.replace(/[\s。、・「」『』（）()[\]{}"'.,!?！？〜～…\-_/]/g, '') ===
+              text.replace(/[\s。、・「」『』（）()[\]{}"'.,!?！？〜～…\-_/]/g, '')
+          ) {
+            matchedMeaning = currentVi;
+          }
+        } else {
+          const found = history?.slice()?.reverse()?.find((h) => h.text && h.text.includes(text));
+          if (found) {
+            matchedContext = found.text;
+            if (
+              found.text.trim() === text ||
+              found.text.replace(/[\s。、・「」『』（）()[\]{}"'.,!?！？〜～…\-_/]/g, '') ===
+                text.replace(/[\s。、・「」『』（）()[\]{}"'.,!?！？〜～…\-_/]/g, '')
+            ) {
+              matchedMeaning = found.vietnamese || '';
+            }
+          }
+        }
+
         setSelection({
           text,
-          contextSentence: currentTurn?.aiSentence || '',
+          contextSentence: matchedContext,
+          suggestedMeaning: matchedMeaning,
         });
       }
     };
 
     document.addEventListener('mouseup', handleMouseUp);
     return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, [currentTurn]);
+  }, [currentTurn, history]);
 
   // 1. Khởi tạo / Random Ngữ cảnh mới (có hỗ trợ lọc theo Level và Topic)
   const handleRandomScenario = async (filterOverrides = {}) => {

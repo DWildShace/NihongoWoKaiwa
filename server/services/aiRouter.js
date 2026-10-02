@@ -116,3 +116,28 @@ export async function generateRandomScenario(params) {
     throw err;
   }
 }
+
+/**
+ * [DISPATCHER: DỊCH NHANH TỪ VỰNG / CÂU TIẾNG NHẬT]
+ */
+export async function translateQuickJapanese(params) {
+  const provider = getPreferredProvider(params.provider);
+
+  if (provider === 'deepseek' && deepseekService.isDeepSeekConfigured()) {
+    try {
+      const res = await deepseekService.translateJapaneseWithDeepSeek(params);
+      if (res) return res;
+    } catch (err) {
+      console.warn('[AI-ROUTER] DeepSeek translate thất bại, chuyển sang Gemini:', err.message);
+    }
+  }
+
+  try {
+    return await geminiService.translateJapaneseWithGemini(params);
+  } catch (err) {
+    if (deepseekService.isDeepSeekConfigured()) {
+      return await deepseekService.translateJapaneseWithDeepSeek(params);
+    }
+    return '';
+  }
+}

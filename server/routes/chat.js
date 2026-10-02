@@ -6,6 +6,7 @@ import {
   generateFastNextTurn,
   generateSessionComprehensiveReview,
   getAvailableProviders,
+  translateQuickJapanese,
 } from '../services/aiRouter.js';
 import { evaluateUserAudioAndRespond } from '../services/geminiService.js';
 import { annotateSentence, normalizeToHiragana, calculateHiraganaSimilarity } from '../services/kuromojiService.js';
@@ -191,6 +192,29 @@ router.post('/tokenize', async (req, res) => {
       },
     });
   } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * Dịch nhanh từ vựng hoặc câu tiếng Nhật sang tiếng Việt
+ * POST /api/chat/translate
+ */
+router.post('/translate', async (req, res) => {
+  try {
+    const { text = '', context = '', provider } = req.body || {};
+    if (!text || !text.trim()) {
+      return res.status(400).json({ success: false, message: 'Thiếu text cần dịch' });
+    }
+
+    const meaning = await translateQuickJapanese({
+      text: text.trim(),
+      context: context.trim(),
+      provider,
+    });
+    res.json({ success: true, meaning });
+  } catch (err) {
+    console.error('[API /chat/translate ERROR]:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
